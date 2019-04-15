@@ -2,7 +2,7 @@
 ##               Read bag from file                ##
 #####################################################
 stream = True
-path = "C:\\Users\\liamm\\Documents\\Recordings\\"
+path = "..\\"
 fn = 'infrareds.bag'
 #####################################################
 
