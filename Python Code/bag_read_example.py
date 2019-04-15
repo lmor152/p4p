@@ -5,6 +5,7 @@ stream = True
 save = False
 path = "..\\..\\Recordings\\"
 fn = 'Gary.bag'
+streams = ['Color', "Infrared1", 'Depth']
 #####################################################
 
 
@@ -27,11 +28,13 @@ config = rs.config()
 rs.config.enable_device_from_file(config, args.input)
 
 # choose streams and their respective windows
-config.enable_stream(rs.stream.infrared, 1)
-config.enable_stream(rs.stream.infrared, 2)
+if "Infrared1" in streams:
+    config.enable_stream(rs.stream.infrared, 1)
+    cv2.namedWindow('IR Left', cv2.WINDOW_AUTOSIZE)
 
-cv2.namedWindow('IR Left', cv2.WINDOW_AUTOSIZE)
-cv2.namedWindow('IR Right', cv2.WINDOW_AUTOSIZE)
+if "Infrared2" in streams:
+    config.enable_stream(rs.stream.infrared, 2)
+    cv2.namedWindow('IR Right', cv2.WINDOW_AUTOSIZE)
 
 if save:
     timestamp = str(datetime.now().strftime("%m-%d-%H%M%S"))
@@ -61,18 +64,20 @@ while True:
     count = frames.frame_number
 
     # Get infrared stream from left camera
-    ir1_frame = frames.get_infrared_frame(1)
-    image1 = np.asanyarray(ir1_frame.get_data())
-    cv2.imshow('IR Left', image1)
-    if save:
-        cv2.imwrite("..\\..\\Frames\\" + timestamp + "\\Infrared1\\" + str(count) + ".png", image1)
+    if "Infrared1" in streams:
+        ir1_frame = frames.get_infrared_frame(1)
+        image1 = np.asanyarray(ir1_frame.get_data())
+        cv2.imshow('IR Left', image1)
+        if save:
+            cv2.imwrite("..\\..\\Frames\\" + timestamp + "\\Infrared1\\" + str(count) + ".png", image1)
 
     # get infrared stream from right camera
-    ir2_frame = frames.get_infrared_frame(2)
-    image2 = np.asanyarray(ir2_frame.get_data())
-    cv2.imshow('IR Right', image2)
-    if save:
-        cv2.imwrite("..\\..\\Frames\\" + timestamp + "\\Infrared2\\" + str(count) + ".png", image2)
+    if "Infrared2" in streams:
+        ir2_frame = frames.get_infrared_frame(2)
+        image2 = np.asanyarray(ir2_frame.get_data())
+        cv2.imshow('IR Right', image2)
+        if save:
+            cv2.imwrite("..\\..\\Frames\\" + timestamp + "\\Infrared2\\" + str(count) + ".png", image2)
 
     # exit when esc is pressed
     key = cv2.waitKey(1)
