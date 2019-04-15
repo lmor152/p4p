@@ -2,10 +2,15 @@
 ##               Read bag from file                ##
 #####################################################
 stream = True
-save = False
+save = True
 path = "..\\..\\Recordings\\"
 fn = 'Gary.bag'
-streams = ['Color', "Infrared1", 'Depth']
+streams = [ 
+            'Color' 
+            ,"Infrared1" 
+            ,"Infrared2"
+            ,'Depth'
+        ]
 #####################################################
 
 
