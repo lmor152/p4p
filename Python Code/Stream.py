@@ -17,17 +17,12 @@ fps = 30
 pipeline = rs.pipeline()
 config = rs.config()
 
-
-parser = argparse.ArgumentParser(description="Read recorded bag file and display depth stream in jet colormap.\
-                                Remember to change the stream resolution, fps and format to match the recorded.")
-parser.add_argument("-i", "--input", type=str, help="Path to the bag file")
-args = parser.parse_args(["-i","C:\\Users\\liamm\\Documents\\Recordings\\Everything.bag"])
-#rs.config.enable_device_from_file(config, args.input)
-
-
 config.enable_stream(rs.stream.infrared,1, resx, resy, format, fps)
 # config.enable_stream(rs.stream.infrared, 2)
 profile = pipeline.start(config)
+device = profile.get_device()
+playback = rs.playback(device)
+#playback.set_real_time(False)
 
 try:
     while True:
