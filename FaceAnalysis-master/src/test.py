@@ -1,5 +1,3 @@
-
-
 # import the necessary packages
 from imutils import face_utils
 import dlib
@@ -12,7 +10,7 @@ detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(p)
 
 # load the input image and convert it to grayscale
-image = cv2.imread("example.png")
+image = cv2.imread("testing.jpg")
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 # detect faces in the grayscale image
@@ -32,9 +30,9 @@ for (i, rect) in enumerate(rects):
 		cv2.circle(image, (x, y), 2, (0, 255, 0), -1)
 
 # show the output image with the face detections + facial landmarks
-cv2.imwrite('output.png',image)
+cv2.imwrite('output1.png',image)
 
-cv2.imshow("Output", image)
+cv2.imshow("Output1", image)
 cv2.waitKey(0)
 
 
