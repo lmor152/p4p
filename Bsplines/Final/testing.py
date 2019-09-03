@@ -73,18 +73,19 @@ def mp_nonlinearOptim(e, p, xgrid, ygrid, xyrange, Phi):
 def nonlinear_errors(Phi, points, xgrid, ygrid, xyrange):
     Phi = Phi.reshape(len(xgrid) + 2, len(ygrid) + 2)
     pool = mp.Pool(mp.cpu_count())
-    global est, error
+    global est
     result = pool.starmap(mp_nonlinearOptim, [(e, p, xgrid, ygrid, xyrange, Phi) for (e,p) in zip(est, points)])
     result = np.array(result)
     est = result[:,0]
     est = np.array(est.tolist())
-    error = result[:,1]
     pool.close()
     return np.sum(error)
 
 def field_nonlinear(Phi, points, xgrid, ygrid, xyrange):
     result = scipy.optimize.minimize(nonlinear_errors, Phi.flatten(), args = (points, xgrid, ygrid, xyrange), jac = lattice_df)
     return result 
+
+
 
 res = field_nonlinear(Phi_control_nonuni, points, xgrid, ygrid, xyrange)
 np.savetxt("NLPhi.csv", res.x, delimiter=",")
