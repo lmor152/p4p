@@ -78,12 +78,11 @@ def df_surf(x, y, xgrid, ygrid, xyrange, Phi):
     dy = np.outer(Bs, dBt) * Phi[i:i+4, j:j+4]
     return np.array([np.sum(dx), np.sum(dy)])
 
-#def lattice_df():
-
-
-def lattice_df(est, points, xgrid, ygrid, xyrange, Phi):
+def lattice_df(Phi, points, xgrid, ygrid, xyrange):
+    Phi = Phi.reshape(len(xgrid) + 2, len(ygrid) + 2)
     minM, minN = xyrange
     dPhi = np.zeros(np.shape(Phi))
+    global est
     xls = vfind_gt(xgrid, est[:,0] - minM)
     yls = vfind_gt(ygrid, est[:,1] - minN)
     evals = vevaluatePoint_Control_nonuni(est[:,0], est[:,1], xgrid, ygrid, xyrange, Phi)
@@ -97,13 +96,12 @@ def lattice_df(est, points, xgrid, ygrid, xyrange, Phi):
         dPhi[i:i+4, j:j+4] = delPhi + dPhi[i:i+4, j:j+4]
     return dPhi
 
-
 def mp_nonlinearOptim(e, p, xgrid, ygrid, xyrange, Phi):
     res = scipy.optimize.minimize(obj, e, args = (p, xgrid, ygrid, xyrange, Phi))
     return res.x, res.fun   
 
 def nonlinear_errors(Phi, points, xgrid, ygrid, xyrange):
-    Phi = Phi.reshape(len(xgrid) + 3, len(ygrid) + 3)
+    Phi = Phi.reshape(len(xgrid) + 2, len(ygrid) + 2)
     pool = mp.Pool(mp.cpu_count())
     global est, error
     result = pool.starmap(mp_nonlinearOptim, [(e, p, xgrid, ygrid, xyrange, Phi) for (e,p) in zip(est, points)])
@@ -115,7 +113,7 @@ def nonlinear_errors(Phi, points, xgrid, ygrid, xyrange):
     return np.sum(error)
 
 def field_nonlinear(Phi, points, xgrid, ygrid, xyrange):
-    result = scipy.optimize.minimize(nonlinear_errors, Phi, args = (points, xgrid, ygrid, xyrange))
+    result = scipy.optimize.minimize(nonlinear_errors, Phi, args = (points, xgrid, ygrid, xyrange), jac = lattice_df)
     return result.x 
 
     
