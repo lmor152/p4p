@@ -84,6 +84,8 @@ def nonlinear_errors(Phi, points, xgrid, ygrid, xyrange):
 
 def field_nonlinear(Phi, points, xgrid, ygrid, xyrange):
     result = scipy.optimize.minimize(nonlinear_errors, Phi.flatten(), args = (points, xgrid, ygrid, xyrange), jac = lattice_df)
-    return result.x 
+    return result 
 
 res = field_nonlinear(Phi_control_nonuni, points, xgrid, ygrid, xyrange)
+np.savetxt("NLPhi.csv", res.x, delimiter=",")
+print(res)

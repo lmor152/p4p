@@ -23,8 +23,6 @@ def evaluatePoint_Control_nonuni(x, y, xgrid, ygrid, xyrange, Phi):
     minM, minN = xyrange
     exmax, exmin, i = find_gt(xgrid, x - minM)
     eymax, eymin, j = find_gt(ygrid, y - minN) 
-    if (i >= len(xgrid)) | (i <= 0) | (j >= len(ygrid)) | (j <= 0):
-        return 0
     s = (x - minM - exmin)/(exmax - exmin)
     t = (y - minN - eymin)/(eymax - eymin)
     Bs = vBasis(range(0,4), s)
@@ -50,7 +48,7 @@ def df(x, y, xgrid, ygrid, xyrange, Phi):
     minM, minN = xyrange
     exmax, exmin, i = find_gt(xgrid, x - minM)
     eymax, eymin, j = find_gt(ygrid, y - minN) 
-    if (i >= len(xgrid)) | (i <= 0) | (j >= len(ygrid)) | (j <= 0):
+    if (i >= len(xgrid)) | (i < 0) | (j >= len(ygrid)) | (j < 0):
         return np.array([0,0])
     s = (x - minM - exmin)/(exmax - exmin)
     t = (y - minN - eymin)/(eymax - eymin)
@@ -58,15 +56,15 @@ def df(x, y, xgrid, ygrid, xyrange, Phi):
     dy = 0
     for k in range(0,4):
         for l in range(0,4):
-            dx = dx + dBasis(k,s)*Basis(l,t)*Phi[i+k, j+l]  
-            dy = dy + Basis(k,s)*dBasis(l,t)*Phi[i+k, j+l]
+            dx = dx + dBasis(k,s)*Basis(l,t)*Phi[i+k, j+l] / (exmax - exmin)   
+            dy = dy + Basis(k,s)*dBasis(l,t)*Phi[i+k, j+l] / (eymax - eymin)
     return np.array([dx, dy])    
 
 def df_surf(x, y, xgrid, ygrid, xyrange, Phi):
     minM, minN = xyrange
     exmax, exmin, i = find_gt(xgrid, x - minM)
     eymax, eymin, j = find_gt(ygrid, y - minN) 
-    if (i >= len(xgrid)) | (i <= 0) | (j >= len(ygrid)) | (j <= 0):
+    if (i >= len(xgrid)) | (i < 0) | (j >= len(ygrid)) | (j < 0):
         return np.array([0,0])
     s = (x - minM - exmin)/(exmax - exmin)
     t = (y - minN - eymin)/(eymax - eymin)  
@@ -74,8 +72,8 @@ def df_surf(x, y, xgrid, ygrid, xyrange, Phi):
     dBt = vdBasis(range(0,4), t)
     Bs = vBasis(range(0,4), s)
     Bt = vBasis(range(0,4), t)
-    dx = np.outer(dBs, Bt) * Phi[i:i+4, j:j+4]
-    dy = np.outer(Bs, dBt) * Phi[i:i+4, j:j+4]
+    dx = np.outer(dBs, Bt) * Phi[i:i+4, j:j+4] / (exmax - exmin)
+    dy = np.outer(Bs, dBt) * Phi[i:i+4, j:j+4] / (exmax - exmin)
     return np.array([np.sum(dx), np.sum(dy)])
 
 def lattice_df(Phi, points, xgrid, ygrid, xyrange):
@@ -97,18 +95,17 @@ def lattice_df(Phi, points, xgrid, ygrid, xyrange):
     return dPhi
 
 def mp_nonlinearOptim(e, p, xgrid, ygrid, xyrange, Phi):
-    res = scipy.optimize.minimize(obj, e, args = (p, xgrid, ygrid, xyrange, Phi))
+    res = scipy.optimize.minimize(obj, e, args = (p, xgrid, ygrid, xyrange, Phi), jac = jac)
     return res.x, res.fun   
 
 def nonlinear_errors(Phi, points, xgrid, ygrid, xyrange):
     Phi = Phi.reshape(len(xgrid) + 2, len(ygrid) + 2)
     pool = mp.Pool(mp.cpu_count())
-    global est, error
+    global est
     result = pool.starmap(mp_nonlinearOptim, [(e, p, xgrid, ygrid, xyrange, Phi) for (e,p) in zip(est, points)])
     result = np.array(result)
     est = result[:,0]
     est = np.array(est.tolist())
-    error = result[:,1]
     pool.close()
     return np.sum(error)
 
