@@ -92,7 +92,7 @@ def lattice_df(Phi, points, xgrid, ygrid, xyrange):
         i = int(xls[q,2])
         j = int(yls[q,2])
         dPhi[i:i+4, j:j+4] = delPhi + dPhi[i:i+4, j:j+4]
-    return dPhi
+    return dPhi.flatten()
 
 def mp_nonlinearOptim(e, p, xgrid, ygrid, xyrange, Phi):
     res = scipy.optimize.minimize(obj, e, args = (p, xgrid, ygrid, xyrange, Phi), jac = jac)
@@ -110,10 +110,8 @@ def nonlinear_errors(Phi, points, xgrid, ygrid, xyrange):
     return np.sum(error)
 
 def field_nonlinear(Phi, points, xgrid, ygrid, xyrange):
-    est = points[:,0:2]
-    result = scipy.optimize.minimize(nonlinear_errors, Phi, args = (points, xgrid, ygrid, xyrange), jac = lattice_df)
+    result = scipy.optimize.minimize(nonlinear_errors, Phi.flatten(), args = (points, xgrid, ygrid, xyrange), jac = lattice_df)
     return result.x 
-
     
 
 
