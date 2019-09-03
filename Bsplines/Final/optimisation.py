@@ -113,6 +113,7 @@ def nonlinear_errors(Phi, points, xgrid, ygrid, xyrange):
     return np.sum(error)
 
 def field_nonlinear(Phi, points, xgrid, ygrid, xyrange):
+    est = points[:,0:2]
     result = scipy.optimize.minimize(nonlinear_errors, Phi, args = (points, xgrid, ygrid, xyrange), jac = lattice_df)
     return result.x 
 
