@@ -8,7 +8,7 @@ def evaluatePoint_Control_nonuni(x, y, xgrid, ygrid, xyrange, Phi):
     minN = xyrange[1]
     exmax, exmin, i = find_gt(xgrid, x - minM)
     eymax, eymin, j = find_gt(ygrid, y - minN) 
-    if (i >= len(xgrid)) | (i <= 0) | (j >= len(ygrid)) | (j <= 0):
+    if (i >= len(xgrid) - 1) | (i < 0) | (j >= len(ygrid) - 1) | (j < 0):
         return 0
     s = (x - minM - exmin)/(exmax - exmin)
     t = (y - minN - eymin)/(eymax - eymin)
@@ -17,18 +17,21 @@ def evaluatePoint_Control_nonuni(x, y, xgrid, ygrid, xyrange, Phi):
         for l in range(0,4):
             f = f + Basis(k,s)*Basis(l,t)*Phi[i+k, j+l]  
     return f
-'''
 
+'''
 def evaluatePoint_Control_nonuni(x, y, xgrid, ygrid, xyrange, Phi):
     minM, minN = xyrange
     exmax, exmin, i = find_gt(xgrid, x - minM)
     eymax, eymin, j = find_gt(ygrid, y - minN) 
+    if (i >= len(xgrid) - 1) | (i < 0) | (j >= len(ygrid) - 1) | (j < 0):
+        return 0
     s = (x - minM - exmin)/(exmax - exmin)
     t = (y - minN - eymin)/(eymax - eymin)
     Bs = vBasis(range(0,4), s)
     Bt = vBasis(range(0,4), t)
     f = np.outer(Bs, Bt) * Phi[i:i+4, j:j+4]
     return np.sum(f)
+ 
 
 def obj(est, point, xgrid, ygrid, xyrange, Phi):
     try:
@@ -38,6 +41,8 @@ def obj(est, point, xgrid, ygrid, xyrange, Phi):
     return (point[0] - est[0])**2 + (point[1] - est[1])**2 + (point[2] - z)**2
 
 def jac(est, point, xgrid, ygrid, xyrange, Phi):
+
+
     z = evaluatePoint_Control_nonuni(est[0], est[1], xgrid, ygrid, xyrange, Phi)
     dfdu = df(est[0], est[1], xgrid, ygrid, xyrange, Phi)
     dfdx = -2*(point[0] - est[0]) - 2*dfdu[0]*(point[2] - z)
@@ -48,8 +53,12 @@ def df(x, y, xgrid, ygrid, xyrange, Phi):
     minM, minN = xyrange
     exmax, exmin, i = find_gt(xgrid, x - minM)
     eymax, eymin, j = find_gt(ygrid, y - minN) 
-    if (i >= len(xgrid)) | (i < 0) | (j >= len(ygrid)) | (j < 0):
-        return np.array([0,0])
+    if (i >= len(xgrid) - 1) | (i < 0) | (j >= len(ygrid) - 1) | (j < 0):
+        eps = 1e-6
+        Z = evaluatePoint_Control_nonuni(x, y, xgrid, ygrid, xyrange, Phi)
+        Zxdash = evaluatePoint_Control_nonuni(x + eps, y, xgrid, ygrid, xyrange, Phi)
+        Zydash = evaluatePoint_Control_nonuni(x, y + eps, xgrid, ygrid, xyrange, Phi)
+        return np.array([(Zxdash - Z)/eps, (Zydash - Z)/eps])
     s = (x - minM - exmin)/(exmax - exmin)
     t = (y - minN - eymin)/(eymax - eymin)
     dx = 0
@@ -80,7 +89,10 @@ def lattice_df(Phi, points, xgrid, ygrid, xyrange):
     Phi = Phi.reshape(len(xgrid) + 2, len(ygrid) + 2)
     minM, minN = xyrange
     dPhi = np.zeros(np.shape(Phi))
-    global est
+    try:
+        est = setting.est
+    except:
+        est = points[:,0:2]
     xls = vfind_gt(xgrid, est[:,0] - minM)
     yls = vfind_gt(ygrid, est[:,1] - minN)
     evals = vevaluatePoint_Control_nonuni(est[:,0], est[:,1], xgrid, ygrid, xyrange, Phi)
@@ -101,18 +113,27 @@ def mp_nonlinearOptim(e, p, xgrid, ygrid, xyrange, Phi):
 def nonlinear_errors(Phi, points, xgrid, ygrid, xyrange):
     Phi = Phi.reshape(len(xgrid) + 2, len(ygrid) + 2)
     pool = mp.Pool(mp.cpu_count())
-    global est
-    result = pool.starmap(mp_nonlinearOptim, [(e, p, xgrid, ygrid, xyrange, Phi) for (e,p) in zip(est, points)])
+    import setting
+    setting.init_est(points)
+    result = pool.starmap(mp_nonlinearOptim, [(e, p, xgrid, ygrid, xyrange, Phi) for (e,p) in zip(setting.est, points)])
     result = np.array(result)
     est = result[:,0]
     est = np.array(est.tolist())
+    setting.est = est
     pool.close()
-    return np.sum(error)
+    return np.sum(result[:,1])
+
+def callbackF(Xi):
+    global Nfeval
+    print('{0:4d} {1: 3.6f}'.format(Nfeval, rosen(Xi)))
+    Nfeval += 1
 
 def field_nonlinear(Phi, points, xgrid, ygrid, xyrange):
-    result = scipy.optimize.minimize(nonlinear_errors, Phi.flatten(), args = (points, xgrid, ygrid, xyrange), jac = lattice_df)
-    return result.x 
-    
+    Nfeval = 0
+    result = scipy.optimize.minimize(nonlinear_errors, Phi.flatten(), args = (points, xgrid, ygrid, xyrange), options = {'maxiter':10, 'disp':True})
+    return result 
+
+
 
 
 
