@@ -5,7 +5,7 @@ from scipy import stats
 from plyfile import PlyData
 
 
-def init(definegrid = False, solve = False, u = 20, v = 20, eps = 1e-6):
+def init(solve = False, u = 20, v = 20, eps = 1e-6):
 
     global xyrange, Phi_control_nonuni, xgrid, ygrid, points
 
