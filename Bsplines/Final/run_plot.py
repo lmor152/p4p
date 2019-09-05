@@ -19,13 +19,16 @@ resx = field.x.reshape(len(xgrid) + 2, len(ygrid) + 2)
 np.savetxt("NLPhi.csv", resx, delimiter=",")
 print(field.fun)
 print(field.message)
+
 '''
 
 from numpy import genfromtxt
-newPhi = genfromtxt('NLPhi.csv', delimiter=',')
+newPhi = genfromtxt('NLPhiFinal.csv', delimiter=',')
 
 #res2 = o.nonlinear_errors(newPhi, points, xgrid, ygrid, xyrange)
 #466748.62296980165
+
+#print(res2)
 
 tx = points[:,0]
 ty = points[:,1]
@@ -36,6 +39,7 @@ Y = np.arange(np.ceil(min(ty)),np.floor(max(ty)), 1)
 X,Y = np.meshgrid(X,Y)
 
 Z = BA.evaluateSurface_Control_nonuni(X, Y, xgrid, ygrid, xyrange, newPhi)
+
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -59,7 +63,6 @@ ax.set_ylim(mid_y - max_range, mid_y + max_range)
 ax.set_zlim(mid_z - max_range, mid_z + max_range)
 
 #plt.show(block=True)
-
 # Set viewpoint.
 ax.azim = 130
 ax.elev = -120
