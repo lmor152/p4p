@@ -41,8 +41,6 @@ def obj(est, point, xgrid, ygrid, xyrange, Phi):
     return (point[0] - est[0])**2 + (point[1] - est[1])**2 + (point[2] - z)**2
 
 def jac(est, point, xgrid, ygrid, xyrange, Phi):
-
-
     z = evaluatePoint_Control_nonuni(est[0], est[1], xgrid, ygrid, xyrange, Phi)
     dfdu = df(est[0], est[1], xgrid, ygrid, xyrange, Phi)
     dfdx = -2*(point[0] - est[0]) - 2*dfdu[0]*(point[2] - z)
