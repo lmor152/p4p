@@ -10,8 +10,8 @@ from plyfile import PlyData
 from optimisation import *
 
 eps = 1e-6
-definegrid = False
-solve = False
+definegrid = True
+solve = True
 u = 20
 v = 20
 
@@ -20,6 +20,9 @@ x = mesh.elements[0]['x']
 y = mesh.elements[0]['y']
 z = mesh.elements[0]['z']
 points = np.c_[x, y, z]
+#tx = points[:, 0]
+#ty = points[:, 1]
+#tz = points[:, 2]
 
 pca = PCA(n_components=3)
 pca.fit(points)
@@ -29,6 +32,7 @@ tpts = pca.transform(points)
 tx = tpts[:, 0]
 ty = tpts[:, 1]
 tz = tpts[:, 2]
+
 points = np.c_[tx,ty,tz]
 
 def onclick(event):
@@ -58,15 +62,15 @@ if definegrid:
     extent = [xedges[0], xedges[-1], yedges[0], yedges[-1]]
 
     plt.clf()
-    plt.imshow(heatmap.T, extent=extent, origin='lower', cmap = 'Greens')
+    plt.imshow(heatmap, aspect = 'equal', extent=extent, origin='lower', cmap = 'Greens')
 
-    plt.axvline(min(tx) - eps, color = 'k')
+    plt.axvline(min(tx), color = 'k')
     plt.axvline(max(tx) + eps, color = 'k')
-    plt.axhline(min(ty) - eps, color = 'k')
+    plt.axhline(min(ty), color = 'k')
     plt.axhline(max(ty) + eps, color = 'k')
 
-    xcoords = [min(tx) - eps, max(tx) + eps] 
-    ycoords = [min(ty) - eps, max(ty) + eps]
+    xcoords = [min(tx), max(tx) + eps] 
+    ycoords = [min(ty), max(ty) + eps]
 
     cid = fig.canvas.mpl_connect('button_press_event', onclick)
     plt.show(block=True)
