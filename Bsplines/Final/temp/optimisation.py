@@ -41,8 +41,6 @@ def obj(est, point, xgrid, ygrid, xyrange, Phi):
     return (point[0] - est[0])**2 + (point[1] - est[1])**2 + (point[2] - z)**2
 
 def jac(est, point, xgrid, ygrid, xyrange, Phi):
-
-
     z = evaluatePoint_Control_nonuni(est[0], est[1], xgrid, ygrid, xyrange, Phi)
     dfdu = df(est[0], est[1], xgrid, ygrid, xyrange, Phi)
     dfdx = -2*(point[0] - est[0]) - 2*dfdu[0]*(point[2] - z)
@@ -124,7 +122,7 @@ def nonlinear_errors(Phi, points, xgrid, ygrid, xyrange):
     return np.sum(result[:,1])
 
 def field_nonlinear(Phi, points, xgrid, ygrid, xyrange):
-    result = scipy.optimize.minimize(nonlinear_errors, Phi.flatten(), args = (points, xgrid, ygrid, xyrange), jac = lattice_df, options = {'maxiter':20, 'disp':True})
+    result = scipy.optimize.minimize(nonlinear_errors, Phi.flatten(), args = (points, xgrid, ygrid, xyrange), method = 'BFGS', jac = lattice_df, options = {'maxiter':200, 'disp':True})
     return result 
 
 
