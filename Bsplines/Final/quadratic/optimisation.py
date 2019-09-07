@@ -128,7 +128,7 @@ def df(x, y, xgrid, ygrid, xyrange, Phi, d):
     Bs = vBasis(d, range(0,d+1), s)
     Bt = vBasis(d, range(0,d+1), t)
     dx = np.outer(dBs, Bt) * Phi[i:i+(d+1), j:j+(d+1)] / (exmax - exmin)
-    dy = np.outer(Bs, dBt) * Phi[i:i+(d+1), j:j+(d+1)] / (exmax - exmin)
+    dy = np.outer(Bs, dBt) * Phi[i:i+(d+1), j:j+(d+1)] / (eymax - eymin)
     return np.array([np.sum(dx), np.sum(dy)])
 
 def lattice_df(Phi, points, xgrid, ygrid, xyrange, d):
