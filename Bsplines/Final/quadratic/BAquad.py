@@ -144,7 +144,7 @@ def BA_control_nonuni(d, points, xgrid, ygrid):
         ygrid {array} -- control grid in y direction
     
     Returns:
-        matrix -- (u+2) by (v+2) control grid (model parameters)
+        matrix -- (u+d-1) by (v+d-1) control grid (model parameters)
     """ 
     # get min x,y coordinate in points
     minM = min(points[:,0])
@@ -155,9 +155,9 @@ def BA_control_nonuni(d, points, xgrid, ygrid):
     v = len(ygrid)
 
     # initialise delta, omega, and Phi
-    delta = np.zeros((u+2, v+2))
-    omg = np.zeros((u+2, v+2))
-    PHI = np.zeros((u+2, v+2))
+    delta = np.zeros((u+d-1, v+d-1))
+    omg = np.zeros((u+d-1, v+d-1))
+    PHI = np.zeros((u+d-1, v+d-1))
 
     # for each point in points
     for p in points:
@@ -185,8 +185,8 @@ def BA_control_nonuni(d, points, xgrid, ygrid):
                 omg[i+k, j+l] = omg[i+k, j+l] + w_kl**2
         
     # coordinate effect of points on control points in least squares way 
-    for i in range(0,u+2):
-        for j in range(0,v+2):
+    for i in range(0,u+d-1):
+        for j in range(0,v+d-1):
             if omg[i, j] != 0:
                 PHI[i, j] = delta[i, j]/omg[i, j]
         
@@ -221,7 +221,8 @@ def evaluatePoint_Control_nonuni(d, x, y, xgrid, ygrid, xyrange, Phi):
     # evaluate each Basis for the local coordiante
     Bs = vBasis(d, range(0,d+1), s)
     Bt = vBasis(d, range(0,d+1), t)
-    f = np.outer(Bs, Bt) * Phi[i:i+4, j:j+4]
+    # evaluate f
+    f = np.outer(Bs, Bt) * Phi[i:i+(d+1), j:j+(d+1)]
     return np.sum(f)
 
 def vevaluatePoint_Control_nonuni(d, x, y, xgrid, ygrid, xyrange, Phi):   
@@ -252,12 +253,6 @@ def vevaluatePoint_Control_nonuni(d, x, y, xgrid, ygrid, xyrange, Phi):
             # evaluate z
             f = f + vectorw(d, k, l, xls[:,3], yls[:,3])*Phi[xls[:,2].astype(int)+k,yls[:,2].astype(int)+l]  
     return f   
-
-'''
-def vectordw(d, k, l, s, t):
-    # vectorize evaluation of dw
-    return vdBasis(d,k,s) * vBasis(d,l,t) + vBasis(d,k,s) * vdBasis(d,l,t)
-'''
 
 def evaluateSurface_Control_nonuni(d, X, Y, xgrid, ygrid, xyrange, Phi):
     # initialise grid for Z 

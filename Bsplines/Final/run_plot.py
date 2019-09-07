@@ -5,7 +5,7 @@ import setting
 
 eps = 1e-6
 definegrid = False
-solve = True
+solve = False
 plot = False
 u = 20
 v = 20
@@ -13,7 +13,7 @@ d = 2
 ptcFileName = 'pc_9.ply'
 xgridFile = 'xgrid_9.csv'
 ygridFile = 'ygrid_9.csv'
-PhiFile = 'Phi_9'
+PhiFile = 'Phi_9.csv'
 
 setting.init(solve, u, v, eps, d, xgridFile, ygridFile, PhiFile, ptcFileName)
 Phi = setting.Phi_control_nonuni
@@ -22,11 +22,11 @@ xgrid = setting.xgrid
 ygrid = setting.ygrid
 xyrange = setting.xyrange
 
-#res = o.nonlinear_errors(Phi, points, xgrid, ygrid, xyrange)
+#res = o.nonlinear_errors(Phi, points, xgrid, ygrid, xyrange, d)
 #665761.8452114458
 
 '''
-field = o.field_nonlinear(Phi, points, xgrid, ygrid, xyrange)
+field = o.field_nonlinear(Phi, points, xgrid, ygrid, xyrange, d)
 resx = field.x.reshape(len(xgrid) + 2, len(ygrid) + 2)
 np.savetxt("NLPhi.csv", resx, delimiter=",")
 print(field.fun)
