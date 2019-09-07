@@ -117,10 +117,10 @@ def evaluateSurface_Control_nonuni(X, Y, xgrid, ygrid, xyrange, Phi):
         Z[i,:] = vevaluatePoint_Control_nonuni(X[i,:], Y[i,:], xgrid, ygrid, xyrange, Phi)
     return Z
 
-def avgError(xyrange, xgrid, ygrid, Phi):
+def Error(points, xgrid, ygrid, Phi):
     xyrange = [min(points[:,0]), min(points[:,1])]
     pred = vevaluatePoint_Control_nonuni(points[:,0], points[:,1], xgrid, ygrid, xyrange, Phi)
     error = pred - points[:,2]
     RMSE = np.sqrt(np.mean(error**2))
-    return RMSE
-
+    SSE = np.sum(error**2)
+    return RMSE, SSE

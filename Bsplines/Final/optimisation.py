@@ -2,23 +2,6 @@ from BAtest import *
 import scipy.optimize
 import multiprocessing as mp
 
-'''
-def evaluatePoint_Control_nonuni(x, y, xgrid, ygrid, xyrange, Phi):
-    minM = xyrange[0]
-    minN = xyrange[1]
-    exmax, exmin, i = find_gt(xgrid, x - minM)
-    eymax, eymin, j = find_gt(ygrid, y - minN) 
-    if (i >= len(xgrid) - 1) | (i < 0) | (j >= len(ygrid) - 1) | (j < 0):
-        return 0
-    s = (x - minM - exmin)/(exmax - exmin)
-    t = (y - minN - eymin)/(eymax - eymin)
-    f = 0
-    for k in range(0,4):
-        for l in range(0,4):
-            f = f + Basis(k,s)*Basis(l,t)*Phi[i+k, j+l]  
-    return f
-
-'''
 def evaluatePoint_Control_nonuni(x, y, xgrid, ygrid, xyrange, Phi):
     minM, minN = xyrange
     exmax, exmin, i = find_gt(xgrid, x - minM)
@@ -41,8 +24,6 @@ def obj(est, point, xgrid, ygrid, xyrange, Phi):
     return (point[0] - est[0])**2 + (point[1] - est[1])**2 + (point[2] - z)**2
 
 def jac(est, point, xgrid, ygrid, xyrange, Phi):
-
-
     z = evaluatePoint_Control_nonuni(est[0], est[1], xgrid, ygrid, xyrange, Phi)
     dfdu = df(est[0], est[1], xgrid, ygrid, xyrange, Phi)
     dfdx = -2*(point[0] - est[0]) - 2*dfdu[0]*(point[2] - z)
@@ -73,8 +54,12 @@ def df_surf(x, y, xgrid, ygrid, xyrange, Phi):
     minM, minN = xyrange
     exmax, exmin, i = find_gt(xgrid, x - minM)
     eymax, eymin, j = find_gt(ygrid, y - minN) 
-    if (i >= len(xgrid)) | (i < 0) | (j >= len(ygrid)) | (j < 0):
-        return np.array([0,0])
+    if (i >= len(xgrid) - 1) | (i < 0) | (j >= len(ygrid) - 1) | (j < 0):
+        eps = 1e-6
+        Z = evaluatePoint_Control_nonuni(x, y, xgrid, ygrid, xyrange, Phi)
+        Zxdash = evaluatePoint_Control_nonuni(x + eps, y, xgrid, ygrid, xyrange, Phi)
+        Zydash = evaluatePoint_Control_nonuni(x, y + eps, xgrid, ygrid, xyrange, Phi)
+        return np.array([(Zxdash - Z)/eps, (Zydash - Z)/eps])
     s = (x - minM - exmin)/(exmax - exmin)
     t = (y - minN - eymin)/(eymax - eymin)  
     dBs = vdBasis(range(0,4), s)

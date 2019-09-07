@@ -10,19 +10,28 @@ from plyfile import PlyData
 from optimisation import *
 
 eps = 1e-6
-definegrid = True
-solve = True
+definegrid = False
+solve = False
+plot = True
 u = 20
 v = 20
 
-mesh = PlyData.read('pc.ply')
+ptcFileName = 'pc_9.ply'
+xgridFile = 'xgrid_9.csv'
+ygridFile = 'ygrid_9.csv'
+PhiFile = 'Phi_9'
+
+mesh = PlyData.read(ptcFileName)
 x = mesh.elements[0]['x']
 y = mesh.elements[0]['y']
 z = mesh.elements[0]['z']
 points = np.c_[x, y, z]
-#tx = points[:, 0]
-#ty = points[:, 1]
-#tz = points[:, 2]
+
+'''
+tx = points[:, 0]
+ty = points[:, 1]
+tz = points[:, 2]
+'''
 
 pca = PCA(n_components=3)
 pca.fit(points)
@@ -77,52 +86,40 @@ if definegrid:
 
     xgrid = np.sort(xcoords) - min(tx)
     ygrid = np.sort(ycoords) - min(ty)
-    np.savetxt("xgrid.csv", xgrid, delimiter=",")
-    np.savetxt("ygrid.csv", ygrid, delimiter=",")
+    np.savetxt(xgridFile, xgrid, delimiter=",")
+    np.savetxt(ygridFile, ygrid, delimiter=",")
    
 from numpy import genfromtxt
-xgrid = genfromtxt('xgrid.csv', delimiter=',')
-ygrid = genfromtxt('ygrid.csv', delimiter=',')
+xgrid = genfromtxt(xgridFile, delimiter=',')
+ygrid = genfromtxt(ygridFile, delimiter=',')
 
 if solve:
     Phi_control_nonuni = BA.BA_control_nonuni(points, xgrid, ygrid)
-    np.savetxt("Phi2.csv", Phi_control_nonuni, delimiter=",")
+    np.savetxt(PhiFile, Phi_control_nonuni, delimiter=",")
 
-Phi_control_nonuni = genfromtxt('Phi2.csv', delimiter=',')
+Phi_control_nonuni = genfromtxt(PhiFile, delimiter=',')
 
 xyrange = [min(points[:,0]), min(points[:,1])]
 
-#point = points[145,:]
-#scipy.optimize.minimize(obj, point[0:2], args = (point, xgrid, ygrid, xyrange, Phi_control_nonuni))
-#scipy.optimize.minimize(obj, point[0:2], args = (point, xgrid, ygrid, xyrange, Phi_control_nonuni), jac = jac)
-#newcoords, obj = nonlinearOptim(xgrid, ygrid, points, Phi_control_nonuni)
+if plot:
+    X = np.arange(np.ceil(min(tx)),np.floor(max(tx)), 1)
+    Y = np.arange(np.ceil(min(ty)),np.floor(max(ty)), 1)
 
-#import multiprocessing as mp
-#pool = mp.Pool(mp.cpu_count())
-#result = pool.starmap(mp_nonlinearOptim, [(p, xgrid, ygrid, xyrange, Phi_control_nonuni) for p in points])
-#pool.close()
+    X,Y = np.meshgrid(X,Y)
 
-#result = scipy.optimize.minimize(nonlinear_errors, Phi_control_nonuni, args = (points, xgrid, ygrid, xyrange))
-est = points[:,0:2]
-#xgrid = [xgrid[0] - (xgrid[1] - xgrid[0])] + xgrid.tolist() + [xgrid[-1] + (xgrid[-1] - xgrid[-2])]
-#ygrid = [ygrid[0] - (ygrid[1] - ygrid[0])] + ygrid.tolist() + [ygrid[-1] + (ygrid[-1] - ygrid[-2])]
+    Z = BA.evaluateSurface_Control_nonuni(X, Y, xgrid, ygrid, xyrange, Phi_control_nonuni)
+    #Z = BA.evaluateSurface_Control_nonuni(X, Y, xgrid, ygrid, xyrange, result)
 
-X = np.arange(np.ceil(min(tx)),np.floor(max(tx)), 1)
-Y = np.arange(np.ceil(min(ty)),np.floor(max(ty)), 1)
+    import matplotlib.pyplot as plt
+    fig = plt.figure(1)
 
-X,Y = np.meshgrid(X,Y)
+    plt.clf()
+    ax = Axes3D(fig, rect=[0, 0, 1, 1], elev=90, azim=0)
+    ax.set_xlim3d(min(tx) - eps, max(tx) + eps)
+    ax.set_ylim3d(min(ty) - eps, max(ty) + eps)
+    ax.plot_surface(X, Y, Z)
+    plt.show(block=True)
 
-Z = BA.evaluateSurface_Control_nonuni(X, Y, xgrid, ygrid, xyrange, Phi_control_nonuni)
-#Z = BA.evaluateSurface_Control_nonuni(X, Y, xgrid, ygrid, xyrange, result)
-
-import matplotlib.pyplot as plt
-fig = plt.figure(1)
-
-plt.clf()
-ax = Axes3D(fig, rect=[0, 0, 1, 1], elev=90, azim=0)
-ax.set_xlim3d(min(tx) - eps, max(tx) + eps)
-ax.set_ylim3d(min(ty) - eps, max(ty) + eps)
-ax.plot_surface(X, Y, Z)
-plt.show(block=True)
-
-#rmse = BA.avgError(xyrange, xgrid, ygrid, Phi_control_nonuni)
+RMSE, SSE = BA.Error(points, xgrid, ygrid, Phi_control_nonuni)
+print(RMSE)
+print(SSE)
