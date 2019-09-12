@@ -6,13 +6,14 @@ from plyfile import PlyData
 
 def init(solve = False, u = 20, v = 20, eps = 1e-6, d=3, xgridFile = 'xgrid.csv', ygridFile = 'ygrid.csv', PhiFile = "Phi.csv", ptcFileName = 'pc.ply'):
 
-    global xyrange, Phi_control_nonuni, xgrid, ygrid, points
+    global xyrange, Phi_control_nonuni, xgrid, ygrid, points, pca, plane, V, centroid
 
     mesh = PlyData.read(ptcFileName)
     x = mesh.elements[0]['x']
     y = mesh.elements[0]['y']
     z = mesh.elements[0]['z']
     points = np.c_[x, y, z]
+    centroid = [np.mean(x), np.mean(y), np.mean(z)]
 
     pca = PCA(n_components=3)
     pca.fit(points)
@@ -23,6 +24,8 @@ def init(solve = False, u = 20, v = 20, eps = 1e-6, d=3, xgridFile = 'xgrid.csv'
     ty = tpts[:, 1]
     tz = tpts[:, 2]
     points = np.c_[tx,ty,tz]
+    dz = np.dot(centroid, V[2,:])
+    plane = np.append(V[2,:], [dz])
 
     from numpy import genfromtxt
     xgrid = genfromtxt(xgridFile, delimiter=',')

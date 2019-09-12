@@ -151,16 +151,11 @@ def lattice_df(Phi, points, xgrid, ygrid, xyrange, d):
     minM, minN = xyrange
     # initialise dPhi
     dPhi = np.zeros(np.shape(Phi))
-    # get est from setting
-    try:
-        est = setting.est
-    except:
-        est = points[:,0:2]
     # evaluate min, max, and index of ensemble corresponding to each point
     xls = vfind_gt(xgrid, est[:,0] - minM)
     yls = vfind_gt(ygrid, est[:,1] - minN)
     # evaluate model at estimates
-    evals = vevaluatePoint_Control_nonuni(d, est[:,0], est[:,1], xgrid, ygrid, xyrange, Phi)
+    evals = vevaluatePoint_Control_nonuni(d, points[:,0], points[:,1], xgrid, ygrid, xyrange, Phi)
     # calculate errors
     error = points[:,2] - evals
     # for each point
@@ -168,7 +163,7 @@ def lattice_df(Phi, points, xgrid, ygrid, xyrange, d):
         # evaluate basis for each control point
         Bs = vBasis(d, range(0,d+1), xls[q,3])
         Bt = vBasis(d, range(0,d+1), yls[q,3])
-        # calculate cahnge in Phi    
+        # calculate change in Phi    
         delPhi = -2 * np.outer(Bs, Bt) * error[q]
         i = int(xls[q,2])
         j = int(yls[q,2])
@@ -242,10 +237,41 @@ def field_nonlinear(Phi, points, xgrid, ygrid, xyrange, d):
         array - best model parameters
     """
     # optimise nonlinear_errors with respect to model parameters
-    result = scipy.optimize.minimize(nonlinear_errors, Phi.flatten(), args = (points, xgrid, ygrid, xyrange, d), jac = lattice_df, options = {'maxiter':1, 'disp':True})
+    result = scipy.optimize.minimize(nonlinear_errors, Phi.flatten(), args = (points, xgrid, ygrid, xyrange, d), jac = lattice_df, options = {'maxiter':10, 'disp':True})
     return result 
 
+def texture_obj(est, origin, xgrid, ygrid, xyrange, Phi, d):
+    z = evaluatePoint_Control_nonuni(d, est[0], est[1], xgrid, ygrid, xyrange, Phi)
+    d2 = z**2 - origin[2]*z**2 / ((est[0]-origin[0])**2 + (est[1] - origin[1])**2 + origin[2]**2)
+    return d2
 
+def texture_jac(est, origin, xgrid, ygrid, xyrange, Phi, d):
+    z = evaluatePoint_Control_nonuni(d, est[0], est[1], xgrid, ygrid, xyrange, Phi)
+    dfdu = df(est[0], est[1], xgrid, ygrid, xyrange, Phi, d)
+    denom = (est[0]-origin[0])**2 + (est[1] - origin[1])**2 + origin[2]**2
+    dfdx = 2*z*dfdu[0] - (2*z*dfdu[0]*origin[2]**2)/denom + (2*(est[0]-origin[0])*(z**2)*origin[2]**2)/denom**2
+    dfdy = 2*z*dfdu[1] - (2*z*dfdu[1]*origin[2]**2)/denom + (2*(est[1]-origin[1])*(z**2)*origin[2]**2)/denom**2
+    return np.array([dfdx,dfdy]) 
 
+def texture_opt(est, origin, xgrid, ygrid, xyrange, Phi, d):
+    res = scipy.optimize.minimize(texture_obj, est, args = (origin, xgrid, ygrid, xyrange, Phi, d), options = {'disp':False}, jac = texture_jac)
+    '''
+    if not res.success:
+        print('fail')
+        print(res.message)
+        res = scipy.optimize.minimize(texture_obj, res.x, args = (origin, xgrid, ygrid, xyrange, Phi, d), method= 'Nelder-Mead',options = {'disp':False})
+        if not res.success:
+            print(res.message)
+    '''
+    return res.x, res.success
 
+def texture_coords(Phi, est, origin, xgrid, ygrid, xyrange, d):
+    # reshape Phi
+    Phi = Phi.reshape(len(xgrid) + d - 1, len(ygrid) + d - 1)
+    # use multi core processing to speed up computation
+    pool = mp.Pool(mp.cpu_count())
+    result = pool.starmap(texture_opt, [(e, origin, xgrid, ygrid, xyrange, Phi, d) for e in est])
+    result = np.array(result)
+    pool.close()
+    return result
 

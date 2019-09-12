@@ -10,7 +10,7 @@ from plyfile import PlyData
 #from optimisation import *
 
 eps = 1e-6
-definegrid = False
+definegrid = True
 solve = True
 plot = True
 u = 20
@@ -18,8 +18,8 @@ v = 20
 d = 2
 
 ptcFileName = 'pc_9.ply'
-xgridFile = 'xgrid_9.csv'
-ygridFile = 'ygrid_9.csv'
+xgridFile = 'test.csv'
+ygridFile = 'test.csv'
 PhiFile = 'Phi_9'
 
 mesh = PlyData.read(ptcFileName)
