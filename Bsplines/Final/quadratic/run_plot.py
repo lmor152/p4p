@@ -2,18 +2,19 @@ import numpy as np
 import BAquad as BA
 import optimisation as o
 import setting
+from scipy.optimize import scipy.optimize.minimize
 
 eps = 1e-6
 definegrid = False
 solve = False
 plot = False
-u = 20
-v = 20
+u = 5
+v = 5
 d = 2
 ptcFileName = 'pc_9.ply'
-xgridFile = 'xgrid_9.csv'
-ygridFile = 'ygrid_9.csv'
-PhiFile = 'Phi_9.csv'
+xgridFile = 'xgrid_95.csv'
+ygridFile = 'ygrid_95.csv'
+PhiFile = 'Phi_95.csv'
 
 setting.init(solve, u, v, eps, d, xgridFile, ygridFile, PhiFile, ptcFileName)
 Phi = setting.Phi_control_nonuni
@@ -24,22 +25,17 @@ xyrange = setting.xyrange
 
 #res = o.nonlinear_errors(Phi, points, xgrid, ygrid, xyrange, d)
 #665761.8452114458
+result = scipy.optimize.minimize(o.nonlinear_errors, Phi.flatten(), args = (points, xgrid, ygrid, xyrange, d), options = {'maxiter':1, 'disp':True})
 
-'''
-field = o.field_nonlinear(Phi, points, xgrid, ygrid, xyrange, d)
+maxit = 10
+field = o.field_nonlinear(Phi, points, xgrid, ygrid, xyrange, d, maxit)
 resx = field.x.reshape(len(xgrid) + 2, len(ygrid) + 2)
 np.savetxt("NLPhi.csv", resx, delimiter=",")
 print(field.fun)
 print(field.message)
 
-'''
 from numpy import genfromtxt
 newPhi = genfromtxt('NLPhiFinal.csv', delimiter=',')
-
-#res2 = o.nonlinear_errors(newPhi, points, xgrid, ygrid, xyrange)
-#466748.62296980165
-
-#print(res2)
 
 if plot:
     tx = points[:,0]
@@ -50,7 +46,7 @@ if plot:
 
     X,Y = np.meshgrid(X,Y)
 
-    Z = BA.evaluateSurface_Control_nonuni(X, Y, xgrid, ygrid, xyrange, newPhi)
+    Z = BA.evaluateSurface_Control_nonuni(d, X, Y, xgrid, ygrid, xyrange, newPhi)
 
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
