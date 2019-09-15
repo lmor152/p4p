@@ -51,6 +51,15 @@ def jac(est, point, xgrid, ygrid, xyrange, Phi, d):
     d = np.array([dfdx, dfdy])  
     return d  
 
+def hessian(est, point, xgrid, ygrid, xyrange, Phi, d):
+    z = evaluatePoint_Control_nonuni(d, est[0], est[1], xgrid, ygrid, xyrange, Phi)
+    dfdu = df(est[0], est[1], xgrid, ygrid, xyrange, Phi, d)
+    ddfdu2 = ddf(est[0], est[1], xgrid, ygrid, xyrange, Phi, d)  
+    ddx2 = -2 * ddfdu2[0,0]*(point[2] - z) + 2*dfdu[0]**2 + 2
+    ddy2 = -2 * ddfdu2[1,1]*(point[2] - z) + 2*dfdu[1]**2 + 2
+    ddxy = -2 * ddfdu2[0,1]*(point[2] - z) + 2*dfdu[0]*dfdu[1]
+    return np.array([[ddx2, ddxy], [ddxy, ddy2]])
+
 def df(x, y, xgrid, ygrid, xyrange, Phi, d):
     """calculate surface derivative
     
@@ -90,6 +99,46 @@ def df(x, y, xgrid, ygrid, xyrange, Phi, d):
     dx = np.outer(dBs, Bt) * Phi[i:i+(d+1), j:j+(d+1)] / (exmax - exmin)
     dy = np.outer(Bs, dBt) * Phi[i:i+(d+1), j:j+(d+1)] / (eymax - eymin)
     return np.array([np.sum(dx), np.sum(dy)])
+
+
+def ddf(x, y, xgrid, ygrid, xyrange, Phi, d):
+    """calculate surface second derivative
+
+    Arguments:
+        x {float} -- x coordinate
+        y {float} -- y coordinate
+        xgrid {array} -- control points in x direction
+        ygrid {array} -- control points in y direction
+        xyrange {array} -- min x,y of point cloud
+        Phi {matrix} -- control lattice
+        d {int} -- Basis degree (2 or 3)
+
+    Returns:
+        array - surface derivative 
+    """
+    # get min x,y coordinate in points
+    minM, minN = xyrange
+    # get the min, max, index of ensemble that corresponds to the point
+    exmax, exmin, i = find_gt(xgrid, x - minM)
+    eymax, eymin, j = find_gt(ygrid, y - minN) 
+    # if index out of range
+    if (i >= len(xgrid) - 1) | (i < 0) | (j >= len(ygrid) - 1) | (j < 0):
+        return np.array([[0,0], [0,0]])
+    # get local coordinate of point (scaled between 0,1)
+    s = (x - minM - exmin)/(exmax - exmin)
+    t = (y - minN - eymin)/(eymax - eymin)  
+    # evaluate derivatives for each affected control point by the point 
+    ddBs = vddBasis(d, range(0,d+1), s)
+    ddBt = vddBasis(d, range(0,d+1), t)
+    dBs = vdBasis(d, range(0,d+1), s)
+    dBt = vdBasis(d, range(0,d+1), t)
+    Bs = vBasis(d, range(0,d+1), s)
+    Bt = vBasis(d, range(0,d+1), t)
+    ddx2 = np.outer(ddBs, Bt) * Phi[i:i+(d+1), j:j+(d+1)] / ((exmax - exmin)**2)
+    ddy2 = np.outer(Bs, ddBt) * Phi[i:i+(d+1), j:j+(d+1)] / ((eymax - eymin)**2)
+    ddxy = np.outer(dBs, dBt) * Phi[i:i+(d+1), j:j+(d+1)] / ((eymax - eymin) * (exmax - exmin))
+    return np.array([[np.sum(ddx2), np.sum(ddxy)], [np.sum(ddxy), np.sum(ddy2)]])   
+
 
 def lattice_df(Phi, points, xgrid, ygrid, xyrange, d):
     """calculate jacobian for Phi
@@ -148,10 +197,10 @@ def mp_nonlinearOptim(e, p, xgrid, ygrid, xyrange, Phi, d):
         res.fun - closest euclidean distance of data point to surface 
     """
     # run scipy optimise
-    res = scipy.optimize.minimize(obj, e, args = (p, xgrid, ygrid, xyrange, Phi, d), jac = jac)
+    res = scipy.optimize.minimize(obj, e, args = (p, xgrid, ygrid, xyrange, Phi, d), method = 'Newton-CG', jac = jac, hess = hessian)
     if not res.success:
-        res = scipy.optimize.minimize(obj, res.x, method = 'nelder-mead', args = (p, xgrid, ygrid, xyrange, Phi, d))
-    return res.x, res.fun, res.success   
+       res = scipy.optimize.minimize(obj, res.x, method = 'nelder-mead', args = (p, xgrid, ygrid, xyrange, Phi, d))
+    return res.x, res.fun 
 
 def nonlinear_errors(Phi, points, xgrid, ygrid, xyrange, d):
     """get sum of euclidean closest distances over all point cloud points
@@ -177,12 +226,10 @@ def nonlinear_errors(Phi, points, xgrid, ygrid, xyrange, d):
     # run mp_nonlinearOptim for all points
     result = pool.starmap(mp_nonlinearOptim, [(e, p, xgrid, ygrid, xyrange, Phi, d) for (e,p) in zip(setting.est, points)])
     result = np.array(result)
-    '''
     # update est
     est = result[:,0]
     est = np.array(est.tolist())
     setting.est = est
-    '''
     pool.close()
     return result
 
@@ -204,37 +251,47 @@ def field_nonlinear(Phi, points, xgrid, ygrid, xyrange, d, maxit):
     result = scipy.optimize.minimize(nonlinear_errors, Phi.flatten(), args = (points, xgrid, ygrid, xyrange, d), jac = lattice_df, options = {'maxiter':maxit, 'disp':True})
     return result 
 
-def texture_obj(est, origin, xgrid, ygrid, xyrange, Phi, d):
+def texture_obj(est, origin, impoint, xgrid, ygrid, xyrange, Phi, d):
     z = evaluatePoint_Control_nonuni(d, est[0], est[1], xgrid, ygrid, xyrange, Phi)
-    d2 = z**2 - origin[2]*z**2 / ((est[0]-origin[0])**2 + (est[1] - origin[1])**2 + origin[2]**2)
+    '''
+    normv1 = (est[0]-impoint[0])**2 +  (est[1]-impoint[1])**2 + z**2 
+    num = ((origin[0] - impoint[0])*(est[0] - impoint[0]) + (origin[1] - impoint[1])*(est[1] - impoint[1]) + origin[2]*z)**2
+    denom = (origin[0] - est[0])**2 + (origin[1] - est[1])**2 + origin[2]**2
+    d2 = normv1 - num/denom
+    '''
+    v1 = np.array([est[0], est[1], z])  - np.array([impoint[0], impoint[1], 0])
+    v2 = origin - np.array([impoint[0], impoint[1], 0])
+    d2 = sum(v1**2) - (np.dot(v1,v2)**2) / sum(v2**2)
     return d2
 
-def texture_jac(est, origin, xgrid, ygrid, xyrange, Phi, d):
+def texture_jac(est, origin, impoint, xgrid, ygrid, xyrange, Phi, d):
     z = evaluatePoint_Control_nonuni(d, est[0], est[1], xgrid, ygrid, xyrange, Phi)
     dfdu = df(est[0], est[1], xgrid, ygrid, xyrange, Phi, d)
-    denom = (est[0]-origin[0])**2 + (est[1] - origin[1])**2 + origin[2]**2
-    dfdx = 2*z*dfdu[0] - (2*z*dfdu[0]*origin[2]**2)/denom + (2*(est[0]-origin[0])*(z**2)*origin[2]**2)/denom**2
-    dfdy = 2*z*dfdu[1] - (2*z*dfdu[1]*origin[2]**2)/denom + (2*(est[1]-origin[1])*(z**2)*origin[2]**2)/denom**2
+    denom = (origin[0] - est[0])**2 + (origin[1] - est[1])**2 + origin[2]**2
+    ex1 = 2*(est[0] - impoint[0])
+    ex2 = 2*z*dfdu[0]
+    numx1 = 2*(origin[0] - est[0])*((origin[0] - impoint[0])*(est[0] - impoint[0]) + (origin[1] - impoint[1])*(est[1] - impoint[1]) + origin[2]*z)**2
+    numx2 = 2*(origin[2]*dfdu[0] + origin[0] - impoint[0])*((origin[0] - impoint[0])*(est[0] - impoint[0]) + (origin[1] - impoint[1])*(est[1] - impoint[1]) + origin[2]*z)
+    dfdx = ex1 + ex2 - numx1/denom**2 - numx2/denom
+    ey1 = 2*(est[1] - impoint[1])
+    ey2 = 2*z*dfdu[1]
+    numy1 = 2*(origin[1] - est[1])*((origin[0] - impoint[0])*(est[0] - impoint[0]) + (origin[1] - impoint[1])*(est[1] - impoint[1]) + origin[2]*z)**2
+    numy2 = 2*(origin[2]*dfdu[1] + origin[1] - impoint[1])*((origin[0] - impoint[0])*(est[0] - impoint[0]) + (origin[1] - impoint[1])*(est[1] - impoint[1]) + origin[2]*z)
+    dfdy = ey1 + ey2 - numy1/denom**2 - numy2/denom
     return np.array([dfdx,dfdy]) 
 
-def texture_opt(est, origin, xgrid, ygrid, xyrange, Phi, d):
-    res = scipy.optimize.minimize(texture_obj, est, args = (origin, xgrid, ygrid, xyrange, Phi, d), options = {'disp':False}, jac = texture_jac)
-    '''
-    if not res.success:
-        print('fail')
-        print(res.message)
-        res = scipy.optimize.minimize(texture_obj, res.x, args = (origin, xgrid, ygrid, xyrange, Phi, d), method= 'Nelder-Mead',options = {'disp':False})
-        if not res.success:
-            print(res.message)
-    '''
+def texture_opt(est, origin, impoint, xgrid, ygrid, xyrange, Phi, d):
+    res = scipy.optimize.minimize(texture_obj, est, args = (origin, impoint, xgrid, ygrid, xyrange, Phi, d), options = {'disp':False}, jac = texture_jac)
+    #if not res.success:
+    #    res = scipy.optimize.minimize(texture_obj, res.x, args = (origin, impoint, xgrid, ygrid, xyrange, Phi, d), method= 'Nelder-Mead',options = {'disp':False})
     return res.x, res.success
 
-def texture_coords(Phi, est, origin, xgrid, ygrid, xyrange, d):
+def texture_coords(Phi, est, origin, impoint, xgrid, ygrid, xyrange, d):
     # reshape Phi
     Phi = Phi.reshape(len(xgrid) + d - 1, len(ygrid) + d - 1)
     # use multi core processing to speed up computation
     pool = mp.Pool(mp.cpu_count())
-    result = pool.starmap(texture_opt, [(e, origin, xgrid, ygrid, xyrange, Phi, d) for e in est])
+    result = pool.starmap(texture_opt, [(e, origin, e, xgrid, ygrid, xyrange, Phi, d) for e in est])
     result = np.array(result)
     pool.close()
     return result

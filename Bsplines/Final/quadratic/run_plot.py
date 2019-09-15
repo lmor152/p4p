@@ -2,7 +2,7 @@ import numpy as np
 import BAquad as BA
 import optimisation as o
 import setting
-from scipy.optimize import scipy.optimize.minimize
+import scipy.optimize
 
 eps = 1e-6
 definegrid = False

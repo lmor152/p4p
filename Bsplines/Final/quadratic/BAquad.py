@@ -67,6 +67,39 @@ def dBasis(d,k,t):
     # evaluate derivativive at d,k,t
     return dBasis[d][k]  
 
+def ddBasis(d,k,t):
+    """Evaluates Basis second derivative
+    
+    Arguments:
+        d {[2,3]} -- degree of basis (2 or 3)
+        k {int} -- the basis function to be evaluated (>= 0 and <= 3)
+        t {float} -- local coordinate of point
+
+    Returns:
+        float -- evaluate derivative of basis at the local coordinates using the kth basis
+    """
+    # check d, t, k are valid inputs
+    assert(d == 2 or d == 3)
+    assert(0 <= t and t < 1) 
+    assert(k<=3) 
+    # define basis based on degree
+    ddBasis = {
+        # cubic bsplines basis
+        3:{
+            0: 1 - t,
+            1: 3*t - 2,
+            2: 1 - 3*t,
+            3: t},
+        # quadratic bsplines basis
+        2:{
+            0: 1,
+            1: -2,
+            2: 1,
+        }
+    }
+    # evaluate derivativive at d,k,t
+    return ddBasis[d][k]      
+
 def vBasis(d,k,t):
     # vectorize Basis function
     vBasis = np.vectorize(Basis)
@@ -76,6 +109,11 @@ def vdBasis(d,k,t):
     # vectorize derivative of Basis function
     vdBasis = np.vectorize(dBasis)
     return vdBasis(d,k,t)
+
+def vddBasis(d,k,t):
+    # vectorize derivative of Basis function
+    vddBasis = np.vectorize(ddBasis)
+    return vddBasis(d,k,t)
 
 def vectorw(d, k, l, s, t):
     # evalute w
