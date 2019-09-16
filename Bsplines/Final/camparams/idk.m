@@ -43,21 +43,23 @@ pcshow(score)
 hold on 
 pcshow([points, zeros(length(points),1)], repmat(tex(:),1,3)/255)
 
-xgrid = dlmread('../forehead/xgrid_95.csv');
-ygrid = dlmread('../forehead/ygrid_95.csv');
-xgrid = xgrid + min(score(:,1));
-ygrid = ygrid + min(score(:,2));
+% xgrid = dlmread('../forehead/xgrid_95.csv');
+% ygrid = dlmread('../forehead/ygrid_95.csv');
+% xgrid = xgrid + min(score(:,1));
+% ygrid = ygrid + min(score(:,2));
+% 
+% xmin = min(xgrid);
+% xmax = max(xgrid);
+% ymin = min(ygrid);
+% ymax = max(ygrid);
+% 
+% xlogic = (points(:,1) >= xmin) & (points(:,1) <= xmax);
+% ylogic = (points(:,2) >= ymin) & (points(:,2) <= ymax);
 
-xmin = min(xgrid);
-xmax = max(xgrid);
-ymin = min(ygrid);
-ymax = max(ygrid);
-
-xlogic = (points(:,1) >= xmin) & (points(:,1) <= xmax);
-ylogic = (-points(:,2) >= ymin) & (-points(:,2) <= ymax);
-
-texp = points(xlogic & ylogic, :);
-ntex = repmat(tex(xlogic & ylogic),1,3)/255;
+% texp = points(xlogic & ylogic, :);
+texp = points;
+%ntex = repmat(tex(xlogic & ylogic),1,3)/255;
+ntex = repmat(tex(:),1,3)/255;
 
 pcshow([texp, zeros(length(texp),1)], ntex)
 hold on
