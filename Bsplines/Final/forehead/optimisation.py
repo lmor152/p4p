@@ -299,8 +299,8 @@ def texture_jac(est, origin, impoint, xgrid, ygrid, xyrange, Phi, d):
 
 def texture_opt(est, origin, impoint, xgrid, ygrid, xyrange, Phi, d):
     res = scipy.optimize.minimize(texture_obj, est, args = (origin, impoint, xgrid, ygrid, xyrange, Phi, d), options = {'disp':False}, jac = texture_jac)
-    #if not res.success:
-    #    res = scipy.optimize.minimize(texture_obj, res.x, args = (origin, impoint, xgrid, ygrid, xyrange, Phi, d), method= 'Nelder-Mead',options = {'disp':False})
+    if not res.success:
+        res = scipy.optimize.minimize(texture_obj, res.x, args = (origin, impoint, xgrid, ygrid, xyrange, Phi, d), method= 'Nelder-Mead',options = {'disp':False})
     return res.x, res.success
 
 def texture_coords(Phi, est, origin, impoint, xgrid, ygrid, xyrange, d):
