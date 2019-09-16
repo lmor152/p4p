@@ -135,6 +135,26 @@ def ddf(x, y, xgrid, ygrid, xyrange, Phi, d):
     ddxy = np.outer(dBs, dBt) * Phi[i:i+(d+1), j:j+(d+1)] / ((eymax - eymin) * (exmax - exmin))
     return np.array([[np.sum(ddx2), np.sum(ddxy)], [np.sum(ddxy), np.sum(ddy2)]])   
 
+def newlattice_df(Phi, points, xgrid, ygrid, xyrange, d):
+    Phi = Phi.reshape(len(xgrid)+d-1, len(ygrid)+d-1)
+    # get min x,y coordinate in points
+    minM, minN = xyrange
+    # initialise dPhi
+    dPhi = np.zeros(np.shape(Phi))
+    import setting
+    est = setting.est
+    for ind, p in enumerate(points):
+        exmax, exmin, i = find_gt(xgrid, p[0] - minM)
+        eymax, eymin, j = find_gt(ygrid, p[1] - minN)
+        s = (p[0] - minM - exmin)/(exmax - exmin)
+        t = (p[1] - minN - eymin)/(eymax - eymin)
+        z = evaluatePoint_Control_nonuni(d, est[ind, 0], est[ind, 1], xgrid, ygrid, xyrange, Phi)
+        e = (p[2] - z)
+        for k in range(0,d+1):
+            for l in range(0,d+1):
+                dPhi[i+k,j+l] = dPhi[i+k,j+l] -2*vectorw(d,k,l,s,t)*e
+    return dPhi.flatten()
+
 
 def lattice_df(Phi, points, xgrid, ygrid, xyrange, d):
     """calculate jacobian for Phi

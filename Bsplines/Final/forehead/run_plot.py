@@ -23,9 +23,12 @@ xgrid = setting.xgrid
 ygrid = setting.ygrid
 xyrange = setting.xyrange
 
-#res = o.nonlinear_errors(Phi, points, xgrid, ygrid, xyrange, d)
+setting.init_est(points)
+res = o.nonlinear_errors(Phi, points, xgrid, ygrid, xyrange, d)
+
+np.savetxt('est.csv', setting.est, delimiter=',')
 #665761.8452114458
-result = scipy.optimize.minimize(o.nonlinear_errors, Phi.flatten(), args = (points, xgrid, ygrid, xyrange, d), options = {'maxiter':1, 'disp':True})
+#result = scipy.optimize.minimize(o.nonlinear_errors, Phi.flatten(), args = (points, xgrid, ygrid, xyrange, d), options = {'maxiter':1, 'disp':True})
 
 maxit = 25
 field = o.field_nonlinear(Phi, points, xgrid, ygrid, xyrange, d, maxit)
