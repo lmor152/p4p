@@ -54,7 +54,7 @@ ymin = min(ygrid);
 ymax = max(ygrid);
 
 xlogic = (points(:,1) >= xmin) & (points(:,1) <= xmax);
-ylogic = (points(:,2) >= ymin) & (points(:,2) <= ymax);
+ylogic = (-points(:,2) >= ymin) & (-points(:,2) <= ymax);
 
 texp = points(xlogic & ylogic, :);
 ntex = repmat(tex(xlogic & ylogic),1,3)/255;
