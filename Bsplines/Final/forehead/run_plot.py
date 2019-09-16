@@ -27,9 +27,9 @@ xyrange = setting.xyrange
 #665761.8452114458
 result = scipy.optimize.minimize(o.nonlinear_errors, Phi.flatten(), args = (points, xgrid, ygrid, xyrange, d), options = {'maxiter':1, 'disp':True})
 
-maxit = 10
+maxit = 25
 field = o.field_nonlinear(Phi, points, xgrid, ygrid, xyrange, d, maxit)
-resx = field.x.reshape(len(xgrid) + 2, len(ygrid) + 2)
+resx = field.x.reshape(len(xgrid) + d -1, len(ygrid) + d-1)
 np.savetxt("NLPhi.csv", resx, delimiter=",")
 print(field.fun)
 print(field.message)
