@@ -1,4 +1,6 @@
-cloud = pcread('../quadratic/pc_9.ply');
+dir = "forehead";
+mkdir(dir);
+cloud = pcread('../forehead/pc_9.ply');
 ptc = cloud.Location;
 [V, score] = pca(ptc);
 centroid = [mean(ptc(:,1)), mean(ptc(:,2)), mean(ptc(:,3))];
@@ -41,8 +43,11 @@ pcshow(score)
 hold on 
 pcshow([points, zeros(length(points),1)], repmat(tex(:),1,3)/255)
 
-xgrid = dlmread('../quadratic/negxgrid');
-ygrid = dlmread('../quadratic/negygrid');
+xgrid = dlmread('../forehead/xgrid_95.csv');
+ygrid = dlmread('../forehead/ygrid_95.csv');
+xgrid = xgrid + min(score(:,1));
+ygrid = ygrid + min(score(:,2));
+
 xmin = min(xgrid);
 xmax = max(xgrid);
 ymin = min(ygrid);
@@ -59,7 +64,7 @@ hold on
 pcshow(score)
 
 %[x,y, texture/255]
-dlmwrite('texturemap',  [texp, ntex(:,1)])
+dlmwrite(dir + "/texturemap",  [texp, ntex(:,1)])
 
 function [t] = line_projection(plane, img_point, F)
 t = plane(4)/(plane(1)*img_point(1) + plane(2)*img_point(2) + plane(3)*F);
