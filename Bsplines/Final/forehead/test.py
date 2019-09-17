@@ -17,10 +17,10 @@ u = 10
 v = 10
 d = 2
 
-ptcFileName = 'pc_9.ply'
-xgridFile = 'xgrid_95.csv'
-ygridFile = 'ygrid_95.csv'
-PhiFile = 'Phi_95'
+ptcFileName = 'forehead.ply'
+xgridFile = 'xgrid_forehead.csv'
+ygridFile = 'ygrid_forehead.csv'
+PhiFile = 'Phi_forehead'
 
 mesh = PlyData.read(ptcFileName)
 x = mesh.elements[0]['x']
