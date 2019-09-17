@@ -13,7 +13,7 @@ fx = dlmread('IntrincsicCam1.csv');
 ptc1 = [ptc, ones(length(ptc),1)];
 img = fmatrix * ptc1';
 image = img(1:2,:) ./ img(3,:);
-image(:,2) = image(:,2)/ (fx(1,1)/fx(2,2));
+image(2,:) = image(2,:)/ (fx(1,1)/fx(2,2));
 %spot on
 pcshow([image', zeros(length(image),1)], repmat(text,1,3))
 
@@ -32,11 +32,11 @@ for i = 1:length(Indx)
     newtext(i) =  D(i,:) * text(Indx(i,:),:)/sum(D(i,:));
 end
 
-pcshow([Y, zeros(length(Y),1)],repmat(newtext,1,3))
+pcshow([Y, zeros(length(Y),1)],repmat(newtext,1,3)/255)
 
 IMG = zeros(length(ymin:ymax), length(xmin:xmax));
 for i = 1:length(Y)
-    IMG(Y(i,2) - ymin + 1, Y(i,1) - xmin + 1) = newtext(i)*255;  
+    IMG(Y(i,2) - ymin + 1, Y(i,1) - xmin + 1) = newtext(i);  
 end
 
 IMG = uint8(IMG);
