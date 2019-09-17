@@ -1,7 +1,7 @@
 ptc = dlmread('../forehead/texturesurf.csv');
 text = dlmread('../forehead/cleantex.csv');
 figure;
-pcshow(ptc, repmat(text,1,3))
+pcshow(ptc, repmat(text,1,3)/255)
 fx = dlmread('IntrincsicCam1.csv');
 
 fmatrix = [fx, zeros(3,1)];

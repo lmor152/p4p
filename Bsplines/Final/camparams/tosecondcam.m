@@ -29,7 +29,7 @@ Y = [A(:), B(:)];
 
 newtext = zeros(length(text),1);
 for i = 1:length(Indx)
-    newtext(i) =  D(i,:) * text(Indx(i,:),:)/sum(D(i,:));
+    newtext(i) =  D(i,:) * text(Indx(i,:))/sum(D(i,:));
 end
 
 pcshow([Y, zeros(length(Y),1)],repmat(newtext,1,3)/255)
