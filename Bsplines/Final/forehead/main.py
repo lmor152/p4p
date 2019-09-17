@@ -2,20 +2,22 @@ import numpy as np
 from numpy import genfromtxt
 import BAquad as BA
 import setting
-from optimisation import *
+import optimisation as o
 from plyfile import PlyData, PlyElement
 import cv2
 import texturemapping as t
 
 eps = 1e-6
-solve = False
+solve = True
+field = True
 u = 10
 v = 10
 d = 3
 ptcFileName = 'pc_9.ply'
-xgridFile = 'xgrid_95.csv'
-ygridFile = 'ygrid_95.csv'
-PhiFile = 'Phi_95.csv'
+xgridFile = 'xgrid_5.csv'
+ygridFile = 'ygrid_5.csv'
+PhiFile = 'Phi_5.csv'
+NLPhiFile = 'NLPhi_5.csv'
 
 setting.init(solve, u, v, eps, d, xgridFile, ygridFile, PhiFile, ptcFileName)
 Phi = setting.Phi_control_nonuni
@@ -27,7 +29,16 @@ centroid = setting.centroid
 V = setting.V
 plane = setting.plane
 
-from numpy import genfromtxt
+if field:
+    setting.init_est(points)
+    res = o.nonlinear_errors(newPhi, points, xgrid, ygrid, xyrange, d)
+    maxit = 25
+    field = o.field_nonlinear(Phi, points, xgrid, ygrid, xyrange, d, maxit)
+    resx = field.x.reshape(len(xgrid) + d -1, len(ygrid) + d-1)
+    np.savetxt(PhiFile, resx, delimiter=",")
+if not field:
+    newPhi = genfromtxt(PhiFile, delimiter=',')
+
 fx = genfromtxt('../camparams/IntrincsicCam1.csv', delimiter=',')
 F = fx[0,0]
 cx = fx[0,2]
@@ -51,9 +62,6 @@ worldpoints = np.c_[xypoints, np.zeros(len(xypoints))]
 origin = [np.dot(np.array([0,0,0]) - centroid, V[0,:]), 
         np.dot(np.array([0,0,0]) - centroid, V[1,:]), 
         np.dot(np.array([0,0,0]) - centroid, V[2,:])]
-
-from numpy import genfromtxt
-newPhi = genfromtxt('NLPhi.csv', delimiter = ',') 
 
 proj = texture_coords(newPhi, xypoints, origin, xypoints, xgrid, ygrid, xyrange, d)
 texpoints = np.array(proj[:,0].tolist())
@@ -98,7 +106,7 @@ A, B = np.meshgrid(range(umin, umax + 1), range(vmin, vmax+1))
 Y = np.c_[A.flatten(), B.flatten()]
 
 from sklearn.neighbors import NearestNeighbors
-knn = NearestNeighbors(n_neighbors=5)
+knn = NearestNeighbors(n_neighbors=10)
 knn.fit(nonuniform)
 D, Ind = knn.kneighbors(Y)
 
