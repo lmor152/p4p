@@ -79,32 +79,39 @@ Tcam2 = genfromtxt('../camparams/Translation2.csv', delimiter= ',')
 from scipy.spatial.transform import Rotation as R
 r = R.from_rotvec(Rcam2)
 rotaionMatrix = r.as_dcm().T
-fmatrix = fx * np.c_[np.identity(3), np.zeros(3)] * np.vstack([np.c_[rotaionMatrix, Tcam2], [0,0,0,1]])
+fmatrix = np.matmul(fx, np.matmul(np.c_[np.identity(3), np.zeros(3)], np.vstack([np.c_[rotaionMatrix, Tcam2], [0,0,0,1]])))
 
-ptc1 = [world_coord, np.ones(length(world_coord))]
-img = fmatrix * ptc1.T
-image[0,:] = img[0,:] / img[2,:]
-image[1,:] = img[1,:] / img[2,:]
+ptc1 = np.c_[world_coord, np.ones(len(world_coord))]
+img = np.matmul(fmatrix, ptc1.T)
+image = img[0:2,:]
+image[0,:] = np.divide(img[0,:], img[2,:])
+image[1,:] = np.divide(img[1,:], img[2,:])
 image[1,:] = image[1,:] * asp
 
 nonuniform = image.T
-umin = np.floor(min(nonuniform[:,0]))
-umax = np.floor(max(nonuniform[:,0]))
-vmin = np.floor(min(nonuniform[:,1]))
-vmax = np.floor(max(nonuniform[:,1]))
+umin = int(np.floor(min(nonuniform[:,0])))
+umax = int(np.floor(max(nonuniform[:,0])))
+vmin = int(np.floor(min(nonuniform[:,1])))
+vmax = int(np.floor(max(nonuniform[:,1])))
 
-A, B = np.meshgrid(range(xmin, xmax + 1), range(ymin, ymax+1))
+A, B = np.meshgrid(range(umin, umax + 1), range(vmin, vmax+1))
 Y = np.c_[A.flatten(), B.flatten()]
 
 from sklearn.neighbors import NearestNeighbors
 knn = NearestNeighbors(n_neighbors=5)
-knn.fit(world_coord)
+knn.fit(nonuniform)
 D, Ind = knn.kneighbors(Y)
 
-newtext = np.zeros(len(test))
+newtext = np.zeros(len(Ind))
 for i in range(0, len(Ind)):
-    newtext(i) = D[i,:] * text[Ind[i,:],:] / sum(D[i,:])
+    newtext[i] = np.dot(D[i,:], cleantext[Ind[i,:]]) / sum(D[i,:])
 
-IMG = np.zeros((len(range(ymin,ymax+1), range(xmin, xmax+1))))
-for i in Y:
-    IMG(i[1], i[0]) = newtext(i)
+IMG = np.zeros((len(range(vmin, vmax + 1)), len(range(umin, umax+1))))
+for i in range(0,len(Y)):
+    IMG[Y[i,1] - vmin, Y[i,0] - umin] = newtext[i]
+
+IMG = IMG.astype(np.uint8)
+
+R = cv2.imread('../camparams/R.bmp')
+from skimage.measure import compare_ssim
+compare_ssim(IMG, R[vmin:vmax+1, umin:umax+1, 1])
