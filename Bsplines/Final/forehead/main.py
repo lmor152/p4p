@@ -70,6 +70,41 @@ world_coord = np.zeros(np.shape(texpoints3d))
 for ind,i in enumerate(texpoints3d):
     world_coord[ind] = centroid + V[0,:]*i[0] + V[1,:]*i[1] + V[2,:]*i[2]
 
-np.savetxt('texturesurf.csv', world_coord, delimiter=',')
-np.savetxt('cleantex.csv', cleantext, delimiter=',')
+#np.savetxt('texturesurf.csv', world_coord, delimiter=',')
+#np.savetxt('cleantex.csv', cleantext, delimiter=',')
 
+Rcam2 = genfromtxt('../camparams/RotationCam2.csv', delimiter= ',')
+Tcam2 = genfromtxt('../camparams/Translation2.csv', delimiter= ',')
+
+from scipy.spatial.transform import Rotation as R
+r = R.from_rotvec(Rcam2)
+rotaionMatrix = r.as_dcm().T
+fmatrix = fx * np.c_[np.identity(3), np.zeros(3)] * np.vstack([np.c_[rotaionMatrix, Tcam2], [0,0,0,1]])
+
+ptc1 = [world_coord, np.ones(length(world_coord))]
+img = fmatrix * ptc1.T
+image[0,:] = img[0,:] / img[2,:]
+image[1,:] = img[1,:] / img[2,:]
+image[1,:] = image[1,:] * asp
+
+nonuniform = image.T
+umin = np.floor(min(nonuniform[:,0]))
+umax = np.floor(max(nonuniform[:,0]))
+vmin = np.floor(min(nonuniform[:,1]))
+vmax = np.floor(max(nonuniform[:,1]))
+
+A, B = np.meshgrid(range(xmin, xmax + 1), range(ymin, ymax+1))
+Y = np.c_[A.flatten(), B.flatten()]
+
+from sklearn.neighbors import NearestNeighbors
+knn = NearestNeighbors(n_neighbors=5)
+knn.fit(world_coord)
+D, Ind = knn.kneighbors(Y)
+
+newtext = np.zeros(len(test))
+for i in range(0, len(Ind)):
+    newtext(i) = D[i,:] * text[Ind[i,:],:] / sum(D[i,:])
+
+IMG = np.zeros((len(range(ymin,ymax+1), range(xmin, xmax+1))))
+for i in Y:
+    IMG(i[1], i[0]) = newtext(i)
