@@ -38,8 +38,8 @@ img = cv2.imread('../camparams/L.bmp')
 tex, points =  t.projection(img, plane, V[0,:], V[1,:], centroid, F, cx, cy, asp)
 
 xmin, ymin = xyrange
-xmax = max(xgrid)
-ymax = max(ygrid)
+xmax = max(xgrid) + xmin
+ymax = max(ygrid) + ymin
 
 xlogic = (points[:,0] >= xmin) & (points[:,0] <= xmax)
 ylogic = (points[:,0] >= ymin) & (points[:,0] <= ymax)
@@ -58,8 +58,8 @@ newPhi = genfromtxt('NLPhi.csv', delimiter = ',')
 proj = texture_coords(newPhi, xypoints, origin, xypoints, xgrid, ygrid, xyrange, d)
 texpoints = np.array(proj[:,0].tolist())
 
-xlogic = (texpoints[:,0] >= min(points[:,0])) & (texpoints[:,0] <= max(points[:,0]))
-ylogic = (texpoints[:,1] >= min(points[:,1])) & (texpoints[:,1] <= max(points[:,1]))
+xlogic = (texpoints[:,0] >= xmin) & (texpoints[:,0] <= xmax)
+ylogic = (texpoints[:,1] >= ymin) & (texpoints[:,1] <= ymax)
 cleanpoints = texpoints[xlogic & ylogic]
 cleantext = texture[xlogic & ylogic]
 
