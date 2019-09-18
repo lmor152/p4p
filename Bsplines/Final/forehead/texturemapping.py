@@ -33,6 +33,10 @@ def projection(img, plane, v1, v2, centroid, F, cx, cy, asp):
             count = count + 1
     return tex, point 
 
+def to_world(centroid, V, point):
+    w = centroid + V[0,:]*point[0] + V[1,:]*point[1] + V[2,:]*point[2]
+    return w
+    
 def forward_project(fx, img, plane, v1, v2, centroid, xmin, xmax, ymin, ymax):
     F = fx[0,0]
     cx = fx[0,2]
