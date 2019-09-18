@@ -144,10 +144,10 @@ def newlattice_df(Phi, points, xgrid, ygrid, xyrange, d):
     import setting
     est = setting.est
     for ind, p in enumerate(points):
-        exmax, exmin, i = find_gt(xgrid, est[ind,0] - minM)
-        eymax, eymin, j = find_gt(ygrid, est[ind,1] - minN)
-        s = (est[ind,0] - minM - exmin)/(exmax - exmin)
-        t = (est[ind,0] - minN - eymin)/(eymax - eymin)
+        exmax, exmin, i = find_gt(xgrid, est[ind, 0] - minM)
+        eymax, eymin, j = find_gt(ygrid, est[ind, 1] - minN)
+        s = (est[ind, 0] - minM - exmin)/(exmax - exmin)
+        t = (est[ind, 1] - minN - eymin)/(eymax - eymin)
         z = evaluatePoint_Control_nonuni(d, est[ind, 0], est[ind, 1], xgrid, ygrid, xyrange, Phi)
         e = (p[2] - z)
         for k in range(0,d+1):
@@ -181,7 +181,6 @@ def lattice_df(Phi, points, xgrid, ygrid, xyrange, d):
     # evaluate min, max, and index of ensemble corresponding to each point
     xls = vfind_gt(xgrid, est[:,0] - minM)
     yls = vfind_gt(ygrid, est[:,1] - minN)
-
     # evaluate model at estimates
     evals = vevaluatePoint_Control_nonuni(d, est[:,0], est[:,1], xgrid, ygrid, xyrange, Phi)
     # calculate errors

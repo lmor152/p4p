@@ -10,7 +10,7 @@ img = fmatrix * ptc1';
 image = img(1:2,:) ./ img(3,:);
 image(:,2) = image(:,2)/ (fx(1,1)/fx(2,2));
 %spot on
-pcshow([image', zeros(length(image),1)], repmat(text,1,3))
+pcshow([image', zeros(length(image),1)], repmat(text,1,3)/255)
 
 
 
