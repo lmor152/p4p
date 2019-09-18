@@ -13,14 +13,14 @@ eps = 1e-6
 definegrid = True
 solve = True
 plot = True
-u = 5
-v = 5
+u = 20
+v = 20
 d = 2
 
 ptcFileName = 'pc_9.ply'
-xgridFile = 'xgrid_95.csv'
-ygridFile = 'ygrid_95.csv'
-PhiFile = 'Phi_95'
+xgridFile = 'xgrid_20.csv'
+ygridFile = 'ygrid_20.csv'
+PhiFile = 'Phi_20'
 
 mesh = PlyData.read(ptcFileName)
 x = mesh.elements[0]['x']
