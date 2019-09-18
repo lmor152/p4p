@@ -9,7 +9,7 @@ import texturemapping as t
 
 eps = 1e-6
 solve = False
-field = False
+field = True
 u = 5
 v = 5
 d = 3
@@ -98,10 +98,10 @@ image[1,:] = np.divide(img[1,:], img[2,:])
 image[1,:] = image[1,:] * asp
 
 nonuniform = image.T
-umin = int(np.floor(min(nonuniform[:,0])))
-umax = int(np.floor(max(nonuniform[:,0])))
-vmin = int(np.floor(min(nonuniform[:,1])))
-vmax = int(np.floor(max(nonuniform[:,1])))
+umin = int(np.floor(np.min(nonuniform[:,0])))
+umax = int(np.floor(np.max(nonuniform[:,0])))
+vmin = int(np.floor(np.min(nonuniform[:,1])))
+vmax = int(np.floor(np.max(nonuniform[:,1])))
 
 A, B = np.meshgrid(range(umin, umax + 1), range(vmin, vmax+1))
 Y = np.c_[A.flatten(), B.flatten()]

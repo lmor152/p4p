@@ -1,3 +1,8 @@
+addpath('optimisation');
+addpath('mapping');
+
+parpool('local',16)
+
 ptc = pcread('pc_9.ply');
 [V, score] = pca(ptc.Location);
 eps = 1e-3;
@@ -19,10 +24,13 @@ xyrange = [xmin, ymin];
 d = 2;
 Phi = BA_control(d, score, xgrid, ygrid);
 
-global est
-est = score(:,1:2);
-E = error_obj(score, xgrid, ygrid, xyrange, Phi, d);
-
+global guess
+guess = score(:,1:2);
+E = error_obj(guess, score, xgrid, ygrid, xyrange, Phi, d);
+    
+options = optimoptions('fminunc','Algorithm','trust-region','SpecifyObjectiveGradient',true, 'display', 'off',...
+    'CheckGradients', true, 'MaxIterations', 1);    
+[x,F,exitflag] = fminunc(@(Phi)error_obj(guess, score, xgrid, ygrid, xyrange, Phi, d), Phi, options);
 
 % [X, Y] = meshgrid(ceil(min(score(:,1))):floor(max(score(:,1))), ...
 %     ceil(min(score(:,2))):floor(max(score(:,2))));
