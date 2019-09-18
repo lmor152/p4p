@@ -19,11 +19,19 @@ est = score(:,1:2);
 E = error_obj(score, xgrid, ygrid, xyrange, Phi, d);
 
 
-[X, Y] = meshgrid(ceil(min(score(:,1))):floor(max(score(:,1))), ...
-    ceil(min(score(:,2))):floor(max(score(:,2))));
+% [X, Y] = meshgrid(ceil(min(score(:,1))):floor(max(score(:,1))), ...
+%     ceil(min(score(:,2))):floor(max(score(:,2))));
+% 
+% Z = evaluateSurface(d,X,Y,xgrid, ygrid, xyrange, Phi);
+% s = surf(X,Y,Z);
+% daspect([1 1 1])
+% hold on
+% pcshow(score, ptc.Color)
+% 
+% [RMSE, SSE] = LinError(d, score, xgrid, ygrid, phi);
 
-Z = evaluateSurface(d,X,Y,xgrid, ygrid, xyrange, Phi);
-s = surf(X,Y,Z);
-daspect([1 1 1])
+nCameras = 2;
+camSequence = [1, 2];
+CPfilename = 'take3_OPTIMISED-PARAMETERS.h5';
 
-[RMSE, SSE] = LinError(d, score, xgrid, ygrid, phi);
+[IntrinsicMatrix, LensDiostortionParams, RotationMatrix, TranslationMatrix] = get_camparams(nCameras, camSequence, CPfilename)
