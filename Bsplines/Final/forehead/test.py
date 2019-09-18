@@ -13,9 +13,9 @@ eps = 1e-6
 definegrid = True
 solve = False
 plot = False
-u = 10
-v = 10
-d = 2
+u = 5
+v = 5
+d = 3
 
 ptcFileName = 'forehead.ply'
 xgridFile = 'xgrid_forehead.csv'

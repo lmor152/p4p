@@ -2,20 +2,23 @@ import numpy as np
 from numpy import genfromtxt
 import BAquad as BA
 import setting
-from optimisation import *
+import optimisation as o
 from plyfile import PlyData, PlyElement
 import cv2
 import texturemapping as t
 
 eps = 1e-6
 solve = False
-u = 10
-v = 10
+field = False
+u = 5
+v = 5
 d = 3
-ptcFileName = 'pc_9.ply'
-xgridFile = 'xgrid_95.csv'
-ygridFile = 'ygrid_95.csv'
-PhiFile = 'Phi_95.csv'
+
+ptcFileName = 'forehead.ply'
+xgridFile = 'xgrid_forehead.csv'
+ygridFile = 'ygrid_forehead.csv'
+PhiFile = 'Phi_forehead'
+NLPhiFile = 'NLPhi_forehead'
 
 setting.init(solve, u, v, eps, d, xgridFile, ygridFile, PhiFile, ptcFileName)
 Phi = setting.Phi_control_nonuni
@@ -27,7 +30,16 @@ centroid = setting.centroid
 V = setting.V
 plane = setting.plane
 
-from numpy import genfromtxt
+if field:
+    setting.init_est(points)
+    res = o.nonlinear_errors(Phi, points, xgrid, ygrid, xyrange, d)
+    maxit = 25
+    field = o.field_nonlinear(Phi, points, xgrid, ygrid, xyrange, d, maxit)
+    newPhi = field.x.reshape(len(xgrid) + d -1, len(ygrid) + d-1)
+    np.savetxt(NLPhiFile, newPhi, delimiter=",")
+elif not field:
+    newPhi = genfromtxt(NLPhiFile, delimiter=',')
+
 fx = genfromtxt('../camparams/IntrincsicCam1.csv', delimiter=',')
 F = fx[0,0]
 cx = fx[0,2]
@@ -42,7 +54,7 @@ xmax = max(xgrid) + xmin
 ymax = max(ygrid) + ymin
 
 xlogic = (points[:,0] >= xmin) & (points[:,0] <= xmax)
-ylogic = (points[:,0] >= ymin) & (points[:,0] <= ymax)
+ylogic = (points[:,1] >= ymin) & (points[:,1] <= ymax)
 
 xypoints = points[xlogic & ylogic]
 texture = tex[xlogic & ylogic]
@@ -52,10 +64,7 @@ origin = [np.dot(np.array([0,0,0]) - centroid, V[0,:]),
         np.dot(np.array([0,0,0]) - centroid, V[1,:]), 
         np.dot(np.array([0,0,0]) - centroid, V[2,:])]
 
-from numpy import genfromtxt
-newPhi = genfromtxt('NLPhi.csv', delimiter = ',') 
-
-proj = texture_coords(newPhi, xypoints, origin, xypoints, xgrid, ygrid, xyrange, d)
+proj = o.texture_coords(newPhi, xypoints, origin, xypoints, xgrid, ygrid, xyrange, d)
 texpoints = np.array(proj[:,0].tolist())
 
 xlogic = (texpoints[:,0] >= xmin) & (texpoints[:,0] <= xmax)
@@ -63,7 +72,7 @@ ylogic = (texpoints[:,1] >= ymin) & (texpoints[:,1] <= ymax)
 cleanpoints = texpoints[xlogic & ylogic]
 cleantext = texture[xlogic & ylogic]
 
-texpointZ = vevaluatePoint_Control_nonuni(d, cleanpoints[:,0], cleanpoints[:,1], xgrid, ygrid, xyrange, newPhi)
+texpointZ = BA.vevaluatePoint_Control_nonuni(d, cleanpoints[:,0], cleanpoints[:,1], xgrid, ygrid, xyrange, newPhi)
 texpoints3d = np.c_[cleanpoints, texpointZ]
 
 world_coord = np.zeros(np.shape(texpoints3d))
@@ -115,3 +124,11 @@ IMG = IMG.astype(np.uint8)
 R = cv2.imread('../camparams/R.bmp')
 from skimage.measure import compare_ssim
 compare_ssim(IMG, R[vmin:vmax+1, umin:umax+1, 1])
+
+import matplotlib.pyplot as plt
+ref = R[vmin:vmax+1, umin:umax+1, 1]
+plt.figure(1)
+plt.imshow(np.repeat(ref[:,:,np.newaxis], 3, axis = 2))
+plt.figure(2)
+plt.imshow(np.repeat(IMG[:,:,np.newaxis], 3, axis = 2))
+plt.show(block=True)
