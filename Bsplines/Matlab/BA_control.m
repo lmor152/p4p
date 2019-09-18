@@ -1,6 +1,6 @@
 function [Phi] = BA_control(d, points, xgrid, ygrid)
-    minM = min(points(:,0));
-    minN = min(points(:,1));
+    minM = min(points(:,1));
+    minN = min(points(:,2));
     u = length(xgrid);
     v = length(ygrid);
     delta = zeros(u+d-1, v+d-1);
@@ -14,8 +14,8 @@ function [Phi] = BA_control(d, points, xgrid, ygrid)
         t = (points(p,2) - minN - eymin)/ (eymax - eymin);
         sumWab2 = sumW2(d, s, t);
         
-        for k = 1:(d+1)
-            for l = 1:(d+1)
+        for k = 0:d
+            for l = 0:d
                 w_kl = W(d, k, l, s, t);
                 Phi_kl = w_kl * points(p,3)/sumWab2;
                 delta(i+k, j+l) = delta(i+k, j+l) + Phi_kl * w_kl^2;
