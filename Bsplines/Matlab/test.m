@@ -1,7 +1,7 @@
 addpath('optimisation');
 addpath('mapping');
 
-parpool('local',16)
+%parpool('local',16)
 
 ptc = pcread('pc_9.ply');
 [V, score] = pca(ptc.Location);
@@ -12,10 +12,10 @@ v2 = V(:,2);
 d = dot(centroid, V(:,3));
 plane = [V(:,3); d];
 
-xgrid = dlmread('../Final/quadratic/xgrid_20.csv');
-ygrid = dlmread('../Final/quadratic/ygrid_20.csv');
-xgrid(end) = xgrid(end) + eps;
-ygrid(end) = ygrid(end) + eps;
+xgrid = dlmread('../Final/quadratic/xgrid_9.csv');
+ygrid = dlmread('../Final/quadratic/ygrid_9.csv');
+% xgrid(end) = xgrid(end) + eps;
+% ygrid(end) = ygrid(end) + eps;
 
 xmin = min(score(:,1));
 ymin = min(score(:,2));
@@ -46,27 +46,18 @@ options = optimoptions('fminunc','Algorithm','trust-region','SpecifyObjectiveGra
 nCameras = 2;
 camSequence = [1, 2];
 CPfilename = '../Final/camparams/take3_OPTIMISED-PARAMETERS.h5';
+img = imread('../Final/camparams/L.bmp');
+img2 = imread('../Final/camparams/R.bmp');
 
 [IntrinsicMatrix, LensDiostortionParams, RotationMatrix, TranslationMatrix] = get_camparams(nCameras, camSequence, CPfilename);
-img = imread('../Final/camparams/L.bmp');
 [tex,points] = projection(img, plane, v1, v2, centroid, ...
     IntrinsicMatrix{1}(1,1),  IntrinsicMatrix{1}(1,3), IntrinsicMatrix{1}(2,3), IntrinsicMatrix{1}(1,1)/ IntrinsicMatrix{1}(2,2));
 
-newxgrid = xgrid + xmin;
-newygrid = ygrid + ymin;
+[texp, ntex] = first_crop(points, tex, xgrid, ygrid, xyrange);
 
-umin = min(newxgrid);
-umax = max(newxgrid);
-vmin = min(newygrid);
-vmax = max(newygrid);
 
-xlogic = (points(:,1) >= umin) & (points(:,1) <= umax);
-ylogic = (points(:,2) >= vmin) & (points(:,2) <= vmax);
 
-texp = points(xlogic & ylogic, :);
-ntex = repmat(tex(xlogic & ylogic),1,3)/255;
-texp = [texp(:,1), -texp(:,2)];
 
 % pcshow(score)
 % hold on 
-% pcshow([points, zeros(length(points),1)], repmat(tex(:),1,3)/255)
+% pcshow([texp, zeros(length(texp),1)], ntex)

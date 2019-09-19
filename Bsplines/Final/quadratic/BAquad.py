@@ -59,7 +59,7 @@ def dBasis(d,k,t):
             3: (t**2) / 2},
         # quadratic bsplines basis
         2:{
-            0: t - 1,
+            0: 1-t,
             1: -2*t + 1,
             2: t,
         }

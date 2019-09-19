@@ -13,7 +13,6 @@ function [Phi] = BA_control(d, points, xgrid, ygrid)
         s = (points(p,1) - minM - exmin)/ (exmax - exmin);
         t = (points(p,2) - minN - eymin)/ (eymax - eymin);
         sumWab2 = sumW2(d, s, t);
-        
         for k = 0:d
             for l = 0:d
                 w_kl = W(d, k, l, s, t);
