@@ -6,7 +6,6 @@ addpath('mapping');
 ptc = pcread('../Final/forehead/pc_9.ply');
 [V, score] = pca(ptc.Location);
 score = double(score);
-score(:,2) = -score(:,2);
 eps = 1e-3;
 centroid = [mean(ptc.Location(:,1)), mean(ptc.Location(:,2)), mean(ptc.Location(:,3))];
 v1 = V(:,1);
@@ -34,9 +33,9 @@ global guess
 guess = score(:,1:2);
 E = error_obj(guess, score, xgrid, ygrid, xyrange, Phi, d);
     
-options = optimoptions('fminunc','Algorithm','trust-region','SpecifyObjectiveGradient',true, 'display', 'iter',...
-     'MaxIterations', 10);    
-[x,F,exitflag] = fminunc(@(Phi)error_obj(guess, score, xgrid, ygrid, xyrange, Phi, d), Phi(:), options);
+options = optimoptions('fminunc','Algorithm','trust-region','SpecifyObjectiveGradient',true, 'display', 'off',...
+     'CheckGradients', true, 'MaxIterations', 1);    
+[x,F,exitflag] = fminunc(@(Phi)error_obj(guess, score, xgrid, ygrid, xyrange, Phi, d), Phi, options);
 % 
 % [X, Y] = meshgrid(ceil(min(score(:,1))):floor(max(score(:,1))), ...
 %     ceil(min(score(:,2))):floor(max(score(:,2))));
