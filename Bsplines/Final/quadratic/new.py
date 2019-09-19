@@ -5,7 +5,7 @@ import setting
 from optimisation import *
 
 eps = 1e-6
-solve = False
+solve = True
 u = 20
 v = 20
 d = 2
