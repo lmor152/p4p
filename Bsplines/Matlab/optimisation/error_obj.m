@@ -11,13 +11,15 @@ function [E, jac] = error_obj(est, points, xgrid, ygrid, xyrange, Phi, d)
         errors(i) = F;
         flags(i) = exitflag;
     end
+
+    if nargout > 1
+        dPhi = field_jac(est, points, xgrid, ygrid, xyrange, Phi, d); 
+        jac = dPhi;
+    end
+    
     E = sum(errors);
     global guess
     guess = newX;
     
-    if nargout > 1
-        dPhi = field_jac(guess, points, xgrid, ygrid, xyrange, Phi, d); 
-        jac = dPhi;
-    end
 end
 

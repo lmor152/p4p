@@ -9,7 +9,7 @@ function [dx, dy] = spline_df(x, y, xgrid, ygrid, xyrange, Phi, d)
     dy = 0;
     for k = 0:d
         for l = 0:d
-            if (k+i < 1) || (j+l < 1) || (k+i > length(xgrid)+d-1) || (k+i > length(xgrid)+d-1)
+            if (k+i < 1) || (j+l < 1) || (k+i > length(xgrid)+d-1) || (j+l > length(ygrid)+d-1)
                 Phi_kl = 0;
             else
                 Phi_kl = Phi(i+k, j+l);
