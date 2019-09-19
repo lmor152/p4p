@@ -5,11 +5,9 @@ function [ub, lb, i] = find_gt(a, x)
             break
         end
     end
-    
-    if i >= length(a)
+    if i == length(a)
         ub = 2*a(end) - a(end-1);
         lb = a(end);
-        
     elseif i < 1
         ub = a(1);
         lb = a(1) - a(2);

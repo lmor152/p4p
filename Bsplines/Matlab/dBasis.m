@@ -4,7 +4,7 @@ function [out] = dBasis(d,k,t)
     assert(k <= 3)
     if d == 2
         if k == 0
-            out = 1-t; 
+            out = t-1; 
         elseif k ==1
             out = -2*t + 1;
         elseif k ==2
