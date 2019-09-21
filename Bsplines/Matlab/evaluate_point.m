@@ -14,6 +14,5 @@ function [f] = evaluate_point(d, x, y, xgrid, ygrid, xyrange, Phi)
         for l = 0:d
             f = f + W(d, k, l, s, t) * Phi(i+k, j+l);
         end
-        
     end
 end
