@@ -43,7 +43,7 @@ options = optimoptions('fminunc','Algorithm','trust-region','SpecifyObjectiveGra
 % hold on
 % pcshow(score, ptc.Color)
 % 
-% [RMSE, SSE] = LinError(d, score, xgrid, ygrid, phi);
+% [RMSE, SSE] = LinError(d, score, xgrid, ygrid, Phi);
 
 nCameras = 2;
 camSequence = [1, 2];

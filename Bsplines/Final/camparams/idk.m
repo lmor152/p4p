@@ -43,8 +43,8 @@ pcshow(score)
 hold on 
 pcshow([points, zeros(length(points),1)], repmat(tex(:),1,3)/255)
 
-xgrid = dlmread('../forehead/xgrid_95.csv');
-ygrid = dlmread('../forehead/ygrid_95.csv');
+% xgrid = dlmread('../forehead/xgrid_95.csv');
+% ygrid = dlmread('../forehead/ygrid_95.csv');
 xgrid = xgrid + min(score(:,1));
 ygrid = ygrid + min(score(:,2));
 

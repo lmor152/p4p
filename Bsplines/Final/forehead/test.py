@@ -11,16 +11,16 @@ from plyfile import PlyData
 
 eps = 1e-6
 definegrid = True
-solve = False
-plot = False
-u = 5
-v = 5
-d = 3
+solve = True
+plot = True
+u = 20
+v = 20
+d = 2
 
-ptcFileName = 'forehead.ply'
-xgridFile = 'xgrid_forehead.csv'
-ygridFile = 'ygrid_forehead.csv'
-PhiFile = 'Phi_forehead'
+ptcFileName = '../../matlab/Gary.ply'
+xgridFile = '../../matlab/xgrid_Gary.csv'
+ygridFile = '../../matlab/ygrid_Gary.csv'
+PhiFile = '../../matlab/Phi_Gary.csv'
 
 mesh = PlyData.read(ptcFileName)
 x = mesh.elements[0]['x']

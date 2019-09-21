@@ -4,8 +4,8 @@ function [E, jac] = error_obj(est, points, xgrid, ygrid, xyrange, Phi, d)
     errors = zeros(length(points),1);
     flags = zeros(length(points),1);
 
-    options = optimoptions('fminunc','Algorithm','trust-region','SpecifyObjectiveGradient',true, 'display', 'off');
-    parfor (i = 1:length(points),16)
+    options = optimoptions('fminunc','Algorithm','quasi-newton','SpecifyObjectiveGradient',true, 'display', 'off');
+    parfor i = 1:length(points)
         [x,F,exitflag] = fminunc(@(x)euclidean_obj(x, points(i,:), xgrid, ygrid, xyrange, Phi, d), est(i,:), options);
         newX(i,:) = x;
         errors(i) = F;
