@@ -1,4 +1,4 @@
-function [ss, IMG] = ForwardProject(ref, R, fx, T, world_coord, ntex)
+function [ss, IMG, reference] = ForwardProject(ref, R, fx, T, world_coord, ntex)
     rotationMatrix = rotationVectorToMatrix(R);
     fmatrix = fx * [eye(3), zeros(3,1)] * [rotationMatrix, T'; zeros(1,3), 1];
     ptc1 = [world_coord, ones(length(world_coord),1)];
@@ -25,6 +25,7 @@ function [ss, IMG] = ForwardProject(ref, R, fx, T, world_coord, ntex)
         IMG(Y(i,2) - ymin + 1, Y(i,1) - xmin + 1) = newtext(i)*255;
     end
     IMG = uint8(IMG);
-    ss = ssim(IMG, ref(ymin:ymax, xmin:xmax));
+    reference = ref(ymin:ymax, xmin:xmax);
+    ss = ssim(IMG, reference);
 end
 

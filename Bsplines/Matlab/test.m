@@ -20,6 +20,8 @@ plane = [V(:,3); d];
 % ygrid = dlmread('ygrid_Gary.csv');
 xgrid = dlmread('../Final/forehead/xgrid_5.csv');
 ygrid = dlmread('../Final/forehead/ygrid_5.csv');
+PhiFile = 'Forehead_tex_NLPhi.csv';
+
 xgrid(end) = xgrid(end) + eps;
 ygrid(end) = ygrid(end) + eps;
 
@@ -34,13 +36,16 @@ Phi = BA_control(d, score, xgrid, ygrid);
 %[x,F,exitflag] = fminunc(@(x)euclidean_obj(x, score(2,:), xgrid, ygrid, xyrange, Phi, d), score(2,1:2), options)
 global guess
 guess = score(:,1:2);
-E = error_obj(guess, score, xgrid, ygrid, xyrange, Phi, d);
+% E = error_obj(guess, score, xgrid, ygrid, xyrange, Phi, d);
     
-[x,F] = NonLinear_opt(Phi, guess, score, xgrid, ygrid, xyrange, d, 1, 1);
+[x,F] = NonLinear_opt(Phi, guess, score, xgrid, ygrid, xyrange, d, 100, 1);
+dlmwrite(PhiFile, reshape(x, length(xgrid)+d-1, length(ygrid)+d-1))
 
 %% start texture stuff
 
 %Phi = dlmread('../Final/forehead/Phi_5.csv');
+Phi = dlmread(PhiFile);
+
 nCameras = 2;
 camSequence = [1, 2];
 CPfilename = '../Final/camparams/take3_OPTIMISED-PARAMETERS.h5';
@@ -50,9 +55,28 @@ refR = imread('../Final/camparams/R.bmp');
 
 [world_coord,ntex] = BackWardProjection(refL, plane, V, centroid, IntrinsicMatrix{1}, [0,0,0], ...
     [0,0,0], xgrid, ygrid, xyrange, Phi, d);
-[ssR, L2R] = ForwardProject(refR, RotationMatrix{2}, IntrinsicMatrix{1}, TranslationMatrix{2}, world_coord, ntex);
+[ssR, L2R, referenceR] = ForwardProject(refR, RotationMatrix{2}, IntrinsicMatrix{1}, TranslationMatrix{2}, world_coord, ntex);
+
+figure;
+imshow(L2R);
+figure;
+imshow(referenceR)
+
+[world_coord,ntex] = BackWardProjection(refR, plane, V, centroid, IntrinsicMatrix{2}, RotationMatrix{2}, ...
+    TranslationMatrix{2}, xgrid, ygrid, xyrange, Phi, d);
+[ssL, R2L, referenceL] = ForwardProject(refL, [0,0,0], IntrinsicMatrix{2}, [0,0,0], world_coord, ntex);
+
+figure;
+imshow(R2L);
+figure;
+imshow(referenceL)
+
+%% build optimisation
+
+[x,F] = mapping_opt(Phi, refL, refR, IntrinsicMatrix, RotationMatrix, TranslationMatrix,plane, V, centroid, xgrid, ygrid, xyrange, d, 10);
 
 
+%%
 % [tex,points] = projection(refL, plane, v1, v2, centroid, ...
 %     IntrinsicMatrix{1}(1,1),  IntrinsicMatrix{1}(1,3), IntrinsicMatrix{1}(2,3), IntrinsicMatrix{1}(1,1)/ IntrinsicMatrix{1}(2,2),...
 %     eye(3), [0,0,0]);
