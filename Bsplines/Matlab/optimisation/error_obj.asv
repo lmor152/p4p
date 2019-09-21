@@ -18,8 +18,7 @@ function [E, jac] = error_obj(est, points, xgrid, ygrid, xyrange, Phi, d)
     end
     
     if nargout > 2
-        ddPhi = field_hess(est, points, xgrid, ygrid, xyrange, Phi, d);
-        hess = ddPhi;
+        ddP
     end    
     
     E = sum(errors);

@@ -37,7 +37,7 @@ Phi = BA_control(d, score, xgrid, ygrid);
 global guess
 guess = score(:,1:2);
 % E = error_obj(guess, score, xgrid, ygrid, xyrange, Phi, d);
-    
+%     
 [x,F] = NonLinear_opt(Phi, guess, score, xgrid, ygrid, xyrange, d, 100, 1);
 dlmwrite(PhiFile, reshape(x, length(xgrid)+d-1, length(ygrid)+d-1))
 
