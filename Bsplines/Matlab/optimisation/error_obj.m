@@ -14,7 +14,7 @@ function [E, jac] = error_obj(est, points, xgrid, ygrid, xyrange, Phi, d)
 
     if nargout > 1
         dPhi = field_jac(est, points, xgrid, ygrid, xyrange, Phi, d); 
-        jac = dPhi;
+        jac = dPhi(:);
     end
     
     E = sum(errors);

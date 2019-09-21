@@ -9,7 +9,7 @@ function [dx, dy] = texture_jac(est, origin, impoint, xgrid, ygrid, xyrange, Phi
     dx = ex1 + ex2 - numx1/denom^2 - numx2/denom;
     ey1 = 2*(est(2) - impoint(2));
     ey2 = 2*z*dfdy;
-    numy1 = 2*(origin(2) - est(2))*((origin(1) - impoint(1))*(est(1) - impoint(1)) + (origin(2) - impoint(2))*(est(2) - impoint(2)) + origin(3)*z)**2
+    numy1 = 2*(origin(2) - est(2))*((origin(1) - impoint(1))*(est(1) - impoint(1)) + (origin(2) - impoint(2))*(est(2) - impoint(2)) + origin(3)*z)^2;
     numy2 = 2*(origin(3)*dfdy + origin(2) - impoint(2))*((origin(1) - impoint(1))*(est(1) - impoint(1)) + (origin(2) - impoint(2))*(est(2) - impoint(2)) + origin(3)*z);
     dy = ey1 + ey2 - numy1/denom^2 - numy2/denom;
 end

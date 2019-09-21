@@ -1,5 +1,5 @@
 function [dPhi] = field_jac(est, point, xgrid, ygrid, xyrange, Phi, d)
-    %Phi = reshape(Phi, length(xgrid)+d-1, length(ygrid)+d-1);
+    Phi = reshape(Phi, length(xgrid)+d-1, length(ygrid)+d-1);
     minM = xyrange(1);
     minN = xyrange(2);
     dPhi = zeros(size(Phi));
