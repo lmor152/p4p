@@ -21,9 +21,9 @@ plane = [V(:,3); d];
 xgrid = dlmread('../Final/forehead/xgrid_5.csv');
 ygrid = dlmread('../Final/forehead/ygrid_5.csv');
 PhiFile = 'Forehead_tex_NLPhi.csv';
-
-xgrid(end) = xgrid(end) + eps;
-ygrid(end) = ygrid(end) + eps;
+% 
+% xgrid(end) = xgrid(end) + eps;
+% ygrid(end) = ygrid(end) + eps;
 
 xmin = min(score(:,1));
 ymin = min(score(:,2));
@@ -52,7 +52,6 @@ CPfilename = '../Final/camparams/take3_OPTIMISED-PARAMETERS.h5';
 refL = imread('../Final/camparams/L.bmp');
 refR = imread('../Final/camparams/R.bmp');
 [IntrinsicMatrix, LensDiostortionParams, RotationMatrix, TranslationMatrix] = get_camparams(nCameras, camSequence, CPfilename);
-
 [world_coord,ntex] = BackWardProjection(refL, plane, V, centroid, IntrinsicMatrix{1}, [0,0,0], ...
     [0,0,0], xgrid, ygrid, xyrange, Phi, d);
 [ssR, L2R, referenceR] = ForwardProject(refR, RotationMatrix{2}, IntrinsicMatrix{1}, TranslationMatrix{2}, world_coord, ntex);
@@ -73,8 +72,15 @@ imshow(referenceL)
 
 %% build optimisation
 
-[x,F] = mapping_opt(Phi, refL, refR, IntrinsicMatrix, RotationMatrix, TranslationMatrix,plane, V, centroid, xgrid, ygrid, xyrange, d, 10);
 
+
+%%
+refL = imread('LiamFrown/CAM1/Image9.bmp');
+refR = imread('LiamFrown/CAM2/Image9.bmp');
+newL = imread('LiamFrown/CAM1/Image10.bmp');
+newR = imread('LiamFrown/CAM2/Image10.bmp');
+
+[x,F] = mapping_opt(Phi, refL, refR, newL, newR, IntrinsicMatrix, RotationMatrix, TranslationMatrix,plane, V, centroid, xgrid, ygrid, xyrange, d, 10);
 
 %%
 % [tex,points] = projection(refL, plane, v1, v2, centroid, ...
