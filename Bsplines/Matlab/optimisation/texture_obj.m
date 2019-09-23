@@ -9,7 +9,7 @@ function [d2, jac, hess] = texture_obj(est, origin, impoint, xgrid, ygrid, xyran
         jac = [dx, dy];
     end
     if nargout > 2
-        hessian = texture_hess();
+        hess = texture_hess(est, origin, impoint, xgrid, ygrid, xyrange, Phi, d);
     end
 end
 
