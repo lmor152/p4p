@@ -3,8 +3,7 @@ addpath('mapping');
 
 %parpool('local',16)
 
-ptc = pcread('../Final/forehead/pc_9.ply');
-% ptc = pcread('Gary.ply');
+ptc = pcread('../Final/forehead/forehead.ply');
 [V, score] = pca(ptc.Location);
 score = double(score);
 eps = 1e-3;
@@ -14,13 +13,9 @@ v2 = V(:,2);
 d = dot(centroid, V(:,3));
 plane = [V(:,3); d];
 % 
-% xgrid = dlmread('../Final/quadratic/xgrid_20.csv');
-% ygrid = dlmread('../Final/quadratic/ygrid_20.csv');
-% xgrid = dlmread('xgrid_Gary.csv');
-% ygrid = dlmread('ygrid_Gary.csv');
-xgrid = dlmread('../Final/forehead/xgrid_5.csv');
-ygrid = dlmread('../Final/forehead/ygrid_5.csv');
-PhiFile = 'Forehead_tex_NLPhi.csv';
+xgrid = dlmread('test4VM/xgrid_test4.csv');
+ygrid = dlmread('test4VM/ygrid_test4.csv');
+PhiFile = 'test4NLPhi.csv';
 
 xgrid(end) = xgrid(end) + eps;
 ygrid(end) = ygrid(end) + eps;
@@ -28,7 +23,7 @@ ygrid(end) = ygrid(end) + eps;
 xmin = min(score(:,1));
 ymin = min(score(:,2));
 xyrange = [xmin, ymin];
-
+%%
 d = 2;
 Phi = BA_control(d, score, xgrid, ygrid);
 
@@ -38,7 +33,7 @@ global guess
 guess = score(:,1:2);
 % E = error_obj(guess, score, xgrid, ygrid, xyrange, Phi, d);
 %     
-[x,F] = NonLinear_opt(Phi, guess, score, xgrid, ygrid, xyrange, d, 100, 1);
+[x,F] = NonLinear_opt(Phi, guess, score, xgrid, ygrid, xyrange, d, 100, 1e-6);
 dlmwrite(PhiFile, reshape(x, length(xgrid)+d-1, length(ygrid)+d-1))
 
 %% start texture stuff
@@ -73,21 +68,21 @@ imshow(referenceL)
 
 %% build optimisation
 
-[x,F] = mapping_opt(Phi, refL, refR, IntrinsicMatrix, RotationMatrix, TranslationMatrix,plane, V, centroid, xgrid, ygrid, xyrange, d, 10);
+[x,F] = mapping_opt(Phi, refL, refR, newL, newR, IntrinsicMatrix, RotationMatrix, TranslationMatrix,plane, V, centroid, xgrid, ygrid, xyrange, d, 10);
 
 
 %%
-% [tex,points] = projection(refL, plane, v1, v2, centroid, ...
-%     IntrinsicMatrix{1}(1,1),  IntrinsicMatrix{1}(1,3), IntrinsicMatrix{1}(2,3), IntrinsicMatrix{1}(1,1)/ IntrinsicMatrix{1}(2,2),...
-%     eye(3), [0,0,0]);
+[tex,points] = projection(refL, plane, v1, v2, centroid, ...
+    IntrinsicMatrix{1}(1,1),  IntrinsicMatrix{1}(1,3), IntrinsicMatrix{1}(2,3), IntrinsicMatrix{1}(1,1)/ IntrinsicMatrix{1}(2,2),...
+    eye(3), [0,0,0]);
 % 
-% [texp, ntex] = first_crop(points, tex, xgrid, ygrid, xyrange);
+[texp, ntex] = first_crop(points, tex, xgrid, ygrid, xyrange);
 % 
-% origin = [dot([0,0,0] - centroid, V(:,1)), ...
-%         dot([0,0,0] - centroid, V(:,2)), ...
-%         dot([0,0,0] - centroid, V(:,3))];
-%     
-% [newX] = texture_opt(Phi, texp, double(origin), texp, xgrid, ygrid, xyrange, d);
+origin = [dot([0,0,0] - centroid, V(:,1)), ...
+        dot([0,0,0] - centroid, V(:,2)), ...
+        dot([0,0,0] - centroid, V(:,3))];
+    
+[newX] = texture_opt(Phi, texp, double(origin), texp, xgrid, ygrid, xyrange, d);
 % [texp, ntex] = second_crop(newX, ntex, xgrid, ygrid, xyrange);
 % texZ = evaluate_pointvec(d,texp(:,1),texp(:,2),xgrid, ygrid, xyrange, Phi);
 % texpoints = [texp, texZ];

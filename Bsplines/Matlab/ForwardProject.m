@@ -15,7 +15,7 @@ function [ss, IMG, reference] = ForwardProject(ref, R, fx, T, world_coord, ntex)
 
     [A, B] = meshgrid(xmin:xmax, ymin:ymax);
     Y = [A(:), B(:)];
-    [Indx, D] = knnsearch(nonuniform, Y, 'K',5);
+    [Indx, D] = knnsearch(nonuniform, Y, 'K',4);
 
     newtext = zeros(length(ntex),1);
     IMG = zeros(length(ymin:ymax), length(xmin:xmax));
