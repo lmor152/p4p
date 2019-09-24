@@ -11,16 +11,16 @@ from plyfile import PlyData
 
 eps = 1e-6
 definegrid = True
-solve = True
-plot = True
-u = 20
-v = 20
+solve = False
+plot = False
+u = 18
+v = 18
 d = 2
 
 ptcFileName = 'pc_9.ply'
-xgridFile = 'xgrid_20.csv'
-ygridFile = 'ygrid_20.csv'
-PhiFile = 'Phi_20'
+xgridFile = 'xgrid_18.csv'
+ygridFile = 'ygrid_18.csv'
+PhiFile = 'Phi_25'
 
 mesh = PlyData.read(ptcFileName)
 x = mesh.elements[0]['x']
