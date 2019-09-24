@@ -3,7 +3,7 @@ addpath('mapping');
 
 %parpool('local',16)
 
-ptc = pcread('../Final/forehead/pc_9.ply');
+ptc = pcread('../Final/quadratic/pc_9.ply');
 % ptc = pcread('Gary.ply');
 [V, score] = pca(ptc.Location);
 score = double(score);
@@ -14,13 +14,13 @@ v2 = V(:,2);
 d = dot(centroid, V(:,3));
 plane = [V(:,3); d];
 % 
-% xgrid = dlmread('../Final/quadratic/xgrid_20.csv');
-% ygrid = dlmread('../Final/quadratic/ygrid_20.csv');
+xgrid = dlmread('../Final/quadratic/xgrid_20.csv');
+ygrid = dlmread('../Final/quadratic/ygrid_20.csv');
 % xgrid = dlmread('xgrid_Gary.csv');
 % ygrid = dlmread('ygrid_Gary.csv');
-xgrid = dlmread('../Final/forehead/xgrid_5.csv');
-ygrid = dlmread('../Final/forehead/ygrid_5.csv');
-PhiFile = 'Forehead_tex_NLPhi.csv';
+% xgrid = dlmread('../Final/forehead/xgrid_5.csv');
+% ygrid = dlmread('../Final/forehead/ygrid_5.csv');
+PhiFile = 'Liam_20.csv';
 
 xgrid(end) = xgrid(end) + eps;
 ygrid(end) = ygrid(end) + eps;
@@ -198,12 +198,12 @@ imshow(referenceL)
 % hold on 
 % pcshow([texp, zeros(length(texp),1)], ntex)
 % 
-% [X, Y] = meshgrid(ceil(min(score(:,1))):floor(max(score(:,1))), ...
-%     ceil(min(score(:,2))):floor(max(score(:,2))));
-% 
-% Z = evaluateSurface(d,X,Y,xgrid, ygrid, xyrange, Phi);
-% s = surf(X,Y,Z);
-% daspect([1 1 1])
+[X, Y] = meshgrid(ceil(min(score(:,1))):floor(max(score(:,1))), ...
+    ceil(min(score(:,2))):floor(max(score(:,2))));
+
+Z = evaluateSurface(d,X,Y,xgrid, ygrid, xyrange, Phi);
+s = surf(X,Y,Z);
+daspect([1 1 1])
 % hold on
 % pcshow(score, ptc.Color)
 % 
