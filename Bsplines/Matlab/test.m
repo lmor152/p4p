@@ -22,13 +22,14 @@ ygrid = dlmread('../Final/quadratic/ygrid_20.csv');
 % ygrid = dlmread('../Final/forehead/ygrid_5.csv');
 PhiFile = 'Liam_20.csv';
 
-xgrid(end) = xgrid(end) + eps;
-ygrid(end) = ygrid(end) + eps;
+xgrid = dlmread('test4VM/xgrid_test4.csv');
+ygrid = dlmread('test4VM/ygrid_test4.csv');
+PhiFile = 'test4NLPhi.csv';
 
 xmin = min(score(:,1));
 ymin = min(score(:,2));
 xyrange = [xmin, ymin];
-
+%%
 d = 2;
 Phi = BA_control(d, score, xgrid, ygrid);
 
@@ -38,7 +39,7 @@ global guess
 guess = score(:,1:2);
 % E = error_obj(guess, score, xgrid, ygrid, xyrange, Phi, d);
 %     
-[x,F] = NonLinear_opt(Phi, guess, score, xgrid, ygrid, xyrange, d, 100, 1);
+[x,F] = NonLinear_opt(Phi, guess, score, xgrid, ygrid, xyrange, d, 100, 1e-6);
 dlmwrite(PhiFile, reshape(x, length(xgrid)+d-1, length(ygrid)+d-1))
 
 %% start texture stuff
@@ -52,7 +53,6 @@ CPfilename = '../Final/camparams/take3_OPTIMISED-PARAMETERS.h5';
 refL = imread('../Final/camparams/L.bmp');
 refR = imread('../Final/camparams/R.bmp');
 [IntrinsicMatrix, LensDiostortionParams, RotationMatrix, TranslationMatrix] = get_camparams(nCameras, camSequence, CPfilename);
-
 [world_coord,ntex] = BackWardProjection(refL, plane, V, centroid, IntrinsicMatrix{1}, [0,0,0], ...
     [0,0,0], xgrid, ygrid, xyrange, Phi, d);
 [ssR, L2R, referenceR] = ForwardProject(refR, RotationMatrix{2}, IntrinsicMatrix{1}, TranslationMatrix{2}, world_coord, ntex);
@@ -72,9 +72,20 @@ figure;
 imshow(referenceL)
 
 %% build optimisation
+[x,F] = mapping_opt(Phi, refL, refR, newL, newR, IntrinsicMatrix, RotationMatrix, TranslationMatrix,plane, V, centroid, xgrid, ygrid, xyrange, d, 10);
 
-[x,F] = mapping_opt(Phi, refL, refR, IntrinsicMatrix, RotationMatrix, TranslationMatrix,plane, V, centroid, xgrid, ygrid, xyrange, d, 10);
+%%
+[tex,points] = projection(refL, plane, v1, v2, centroid, ...
+    IntrinsicMatrix{1}(1,1),  IntrinsicMatrix{1}(1,3), IntrinsicMatrix{1}(2,3), IntrinsicMatrix{1}(1,1)/ IntrinsicMatrix{1}(2,2),...
+    eye(3), [0,0,0]);
 
+%%
+refL = imread('LiamFrown/CAM1/Image9.bmp');
+refR = imread('LiamFrown/CAM2/Image9.bmp');
+newL = imread('LiamFrown/CAM1/Image10.bmp');
+newR = imread('LiamFrown/CAM2/Image10.bmp');
+
+[x,F] = mapping_opt(Phi, refL, refR, newL, newR, IntrinsicMatrix, RotationMatrix, TranslationMatrix,plane, V, centroid, xgrid, ygrid, xyrange, d, 10);
 
 %%
 % [tex,points] = projection(refL, plane, v1, v2, centroid, ...
@@ -82,7 +93,7 @@ imshow(referenceL)
 %     eye(3), [0,0,0]);
 % 
 % [texp, ntex] = first_crop(points, tex, xgrid, ygrid, xyrange);
-% 
+% % 
 % origin = [dot([0,0,0] - centroid, V(:,1)), ...
 %         dot([0,0,0] - centroid, V(:,2)), ...
 %         dot([0,0,0] - centroid, V(:,3))];
