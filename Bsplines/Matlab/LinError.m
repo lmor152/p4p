@@ -1,4 +1,4 @@
-function [RMSE,SSE] = LinError(d, points, xgrid, ygrid, Phi)
+function [RMSE,SSE,error] = LinError(d, points, xgrid, ygrid, Phi)
     xyrange = [min(points(:,1)), min(points(:,2))];
     pred = zeros(length(points), 1);
     for i = 1:length(points)

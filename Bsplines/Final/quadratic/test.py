@@ -13,13 +13,13 @@ eps = 1e-6
 definegrid = True
 solve = False
 plot = False
-u = 18
-v = 18
+u = 20
+v = 20
 d = 2
 
-ptcFileName = 'pc_9.ply'
-xgridFile = 'xgrid_18.csv'
-ygridFile = 'ygrid_18.csv'
+ptcFileName = '../../matlab/forPCA/alignPTC/pca1.ply'
+xgridFile = '../../matlab/forPCA/alignPTC/xgrid.csv'
+ygridFile = '../../matlab/forPCA/alignPTC/ygrid.csv'
 PhiFile = 'Phi_25'
 
 mesh = PlyData.read(ptcFileName)
