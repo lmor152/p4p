@@ -1,4 +1,4 @@
-function [E, jac] = error_obj(est, points, xgrid, ygrid, xyrange, Phi, d)
+function [E, jac, errors] = error_obj(est, points, xgrid, ygrid, xyrange, Phi, d)
 
     newX = zeros(size(points(:,1:2)));
     errors = zeros(length(points),1);
@@ -17,10 +17,10 @@ function [E, jac] = error_obj(est, points, xgrid, ygrid, xyrange, Phi, d)
         jac = dPhi(:);
     end
     
-    if nargout > 2
-        ddPhi = field_hess(est, points, xgrid, ygrid, xyrange, Phi, d);
-        hess = ddPhi;
-    end    
+%     if nargout > 2
+%         ddPhi = field_hess(est, points, xgrid, ygrid, xyrange, Phi, d);
+%         hess = ddPhi;
+%     end    
     
     E = sum(errors);
     global guess

@@ -1,10 +1,7 @@
 addpath('optimisation');
 addpath('mapping');
 
-%parpool('local',16)
-
-ptc = pcread('../Final/quadratic/pc_9.ply');
-% ptc = pcread('Gary.ply');
+ptc = pcread('forPCA/alignPTC/pca1.ply');
 [V, score] = pca(ptc.Location);
 score = double(score);
 eps = 1e-3;
@@ -13,18 +10,18 @@ v1 = V(:,1);
 v2 = V(:,2);
 d = dot(centroid, V(:,3));
 plane = [V(:,3); d];
+% % 
+% xgrid = dlmread('../Final/quadratic/xgrid_9.csv');
+% ygrid = dlmread('../Final/quadratic/ygrid_9.csv');
 % 
-xgrid = dlmread('../Final/quadratic/xgrid_20.csv');
-ygrid = dlmread('../Final/quadratic/ygrid_20.csv');
-% xgrid = dlmread('xgrid_Gary.csv');
-% ygrid = dlmread('ygrid_Gary.csv');
-% xgrid = dlmread('../Final/forehead/xgrid_5.csv');
-% ygrid = dlmread('../Final/forehead/ygrid_5.csv');
-PhiFile = 'Liam_20.csv';
+% PhiFile = 'NLLiam_Phi.csv';
 
-xgrid = dlmread('test4VM/xgrid_test4.csv');
-ygrid = dlmread('test4VM/ygrid_test4.csv');
-PhiFile = 'test4NLPhi.csv';
+xgrid = dlmread('forPCA/alignPTC/xgrid.csv');
+ygrid = dlmread('forPCA/alignPTC/ygrid.csv');
+xgrid(end) = xgrid(end) + 1e-3;
+ygrid(end) = ygrid(end) + 1e-3;
+
+PhiFile = 'Phi_NL_pca1.csv';
 
 xmin = min(score(:,1));
 ymin = min(score(:,2));
@@ -32,12 +29,12 @@ xyrange = [xmin, ymin];
 %%
 d = 2;
 Phi = BA_control(d, score, xgrid, ygrid);
-
+%%
 %options = optimoptions('fminunc','Algorithm','trust-region','SpecifyObjectiveGradient',true, 'display', 'iter');
 %[x,F,exitflag] = fminunc(@(x)euclidean_obj(x, score(2,:), xgrid, ygrid, xyrange, Phi, d), score(2,1:2), options)
 global guess
 guess = score(:,1:2);
-% E = error_obj(guess, score, xgrid, ygrid, xyrange, Phi, d);
+[E,~,error] = error_obj(guess, score, xgrid, ygrid, xyrange, Phi, d);
 %     
 [x,F] = NonLinear_opt(Phi, guess, score, xgrid, ygrid, xyrange, d, 100, 1e-6);
 dlmwrite(PhiFile, reshape(x, length(xgrid)+d-1, length(ygrid)+d-1))
@@ -209,13 +206,15 @@ newR = imread('LiamFrown/CAM2/Image10.bmp');
 % hold on 
 % pcshow([texp, zeros(length(texp),1)], ntex)
 % 
-[X, Y] = meshgrid(ceil(min(score(:,1))):floor(max(score(:,1))), ...
-    ceil(min(score(:,2))):floor(max(score(:,2))));
-
-Z = evaluateSurface(d,X,Y,xgrid, ygrid, xyrange, Phi);
-s = surf(X,Y,Z);
-daspect([1 1 1])
+% [X, Y] = meshgrid(ceil(min(score(:,1))):floor(max(score(:,1))), ...
+%     ceil(min(score(:,2))):floor(max(score(:,2))));
+% 
+% Z = evaluateSurface(d,X,Y,xgrid, ygrid, xyrange, Phi);
+% %s = surf(X,Y,Z, 'FaceColor', 'c', 'FaceAlpha', 0.3);
+% s = surf(X,Y,Z, 'FaceColor', 'c', 'FaceAlpha', 0.2);
+% daspect([1 1 1])
+% set(gca, 'Zdir', 'reverse')
 % hold on
 % pcshow(score, ptc.Color)
 % 
-% [RMSE, SSE] = LinError(d, score, xgrid, ygrid, phi);
+[RMSE, SSE, error] = LinError(d, score, xgrid, ygrid, phi);

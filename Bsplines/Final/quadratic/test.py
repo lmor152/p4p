@@ -17,9 +17,9 @@ u = 20
 v = 20
 d = 2
 
-ptcFileName = '../../matlab/forPCA/alignPTC/pca1.ply'
-xgridFile = '../../matlab/forPCA/alignPTC/xgrid.csv'
-ygridFile = '../../matlab/forPCA/alignPTC/ygrid.csv'
+ptcFileName = 'pc_9.ply'
+xgridFile = 'y_grid_25.csv'
+ygridFile = 'xgrid_25.csv'
 PhiFile = 'Phi_25'
 
 mesh = PlyData.read(ptcFileName)
